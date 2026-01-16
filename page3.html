@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexi CBT – Exam Instructions</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#f4f6f4;
+}
+
+/* HEADER */
+.header{
+  background:#0b6623;
+  color:white;
+  padding:12px 18px;
+  font-size:18px;
+  font-weight:bold;
+}
+
+/* CONTAINER */
+.container{
+  max-width:600px;
+  margin:40px auto;
+  background:white;
+  padding:25px;
+  border:1px solid #c8e6c9;
+}
+
+/* TITLE */
+h2{
+  text-align:center;
+  color:#0b6623;
+  margin-top:0;
+}
+
+/* INSTRUCTIONS */
+ul{
+  padding-left:20px;
+}
+li{
+  margin-bottom:10px;
+  line-height:1.5;
+}
+
+/* CONFIRM */
+.confirm{
+  margin-top:20px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.confirm input{
+  transform:scale(1.2);
+  accent-color:#0b6623;
+}
+
+/* BUTTON */
+button{
+  margin-top:20px;
+  width:100%;
+  padding:12px;
+  background:#0b6623;
+  color:white;
+  border:none;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{
+  background:#084d1a;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  Flexi CBT Simulator
+</div>
+
+<!-- INSTRUCTIONS -->
+<div class="container">
+  <h2>Examination Instructions</h2>
+
+  <ul>
+    <li>You have a limited time to complete this examination.</li>
+    <li>English Language is compulsory.</li>
+    <li>You are required to answer all questions.</li>
+    <li>Only one option is correct for each question.</li>
+    <li>Answered questions will be marked <b style="color:green;">green</b>; unanswered ones will be <b style="color:red;">red</b>.</li>
+    <li>Use the navigation buttons to move between questions.</li>
+    <li>Click the <b>Submit</b> button when you are done.</li>
+    <li>Once submitted, you cannot return to the exam.</li>
+  </ul>
+
+  <div class="confirm">
+    <input type="checkbox" id="agree">
+    <label for="agree">I have read and understood the instructions</label>
+  </div>
+
+  <button onclick="startExam()">Start Examination</button>
+</div>
+<script>
+function startExam(){
+  const agree = document.getElementById("agree").checked;
+
+  if(!agree){
+    alert("You must agree to the instructions before starting the exam.");
+    return;
+  }
+
+  // Move to Exam UI
+  window.location.href = "page4.html";
+}
+</script>
+</body>
+</html>

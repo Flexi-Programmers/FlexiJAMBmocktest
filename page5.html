@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexi CBT – Submission Status</title>
+<style>
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  text-align: center;
+  max-width: 400px;
+}
+
+h1 {
+  color: #0b6623;
+  margin-bottom: 20px;
+}
+
+p {
+  font-size: 16px;
+  margin-bottom: 25px;
+}
+
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #ccc;
+  border-top-color: #0b6623;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#homeBtn {
+  display: none; /* initially hidden */
+  padding: 12px 25px;
+  border: none;
+  border-radius: 12px;
+  background-color: #0b6623;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: background 0.3s, transform 0.2s;
+}
+
+#homeBtn:hover {
+  background-color: #084d1a;
+  transform: translateY(-2px);
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Exam Submission</h1>
+  <p id="statusMessage">
+    <span class="spinner"></span> Submitting your exam...
+  </p>
+  <button id="homeBtn">Back to Home</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+// ================= FIREBASE CONFIG =================
+const firebaseConfig = {
+  apiKey: "AIzaSyCPumFid5YNTWug52q2VDtSDQTLU9REgss",
+  authDomain: "flexi-tutors.firebaseapp.com",
+  projectId: "flexi-tutors",
+  storageBucket: "flexi-tutors.firebasestorage.app",
+  messagingSenderId: "320176672406",
+  appId: "1:320176672406:web:90f19511241e51c6437cb7",
+  measurementId: "G-Z9P1G4K0SY"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ================= ELEMENTS =================
+const status = document.getElementById("statusMessage");
+const homeBtn = document.getElementById("homeBtn");
+
+// ================= READ LOCALSTORAGE =================
+const candidateName = localStorage.getItem("candidateName");
+const selectedSubjects = JSON.parse(localStorage.getItem("selectedSubjects") || "[]");
+const answers = JSON.parse(localStorage.getItem("cbt_answers") || "{}");
+
+// Validate data
+if (!candidateName || selectedSubjects.length !== 4 || !answers) {
+  status.innerHTML = "❌ Exam data missing. Please contact the invigilator.";
+  status.style.color = "red";
+  homeBtn.style.display = "inline-block";
+  throw new Error("Missing exam data in localStorage");
+}
+
+// ================= SUBMIT TO FIRESTORE =================
+async function submitExam() {
+  const payload = {
+    name: candidateName,
+    subjects: selectedSubjects,
+    answers,
+    submittedAt: serverTimestamp()
+  };
+
+  try {
+    await setDoc(doc(db, "cbtResults", `${candidateName}_${Date.now()}`), payload);
+
+    status.innerHTML = "✅ Your exam has been submitted successfully. Results saved to admin.";
+    status.style.color = "#0b6623";
+
+    homeBtn.style.display = "inline-block";
+
+    // Clear localStorage
+    localStorage.removeItem("cbt_answers");
+    localStorage.removeItem("cbt_currentSubject");
+    localStorage.removeItem("cbt_qIndex");
+    localStorage.removeItem("selectedSubjects");
+
+  } catch (err) {
+    console.error(err);
+    status.innerHTML = "❌ Submission failed. Please check your internet connection or contact the invigilator.";
+    status.style.color = "red";
+    homeBtn.style.display = "inline-block";
+  }
+}
+
+// ================= BACK TO HOME BUTTON =================
+homeBtn.onclick = () => {
+  window.location.href = "https://flexi-programmers.github.io/flexitutors-/";
+};
+
+// Trigger submission
+submitExam();
+</script>
+
+</body>
+</html>

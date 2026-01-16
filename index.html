@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexi CBT – Candidate Login</title>
+<style>
+body {
+  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background:#f4f6f4;
+}
+.header {
+  background:#0b6623;
+  color:white;
+  padding:15px 20px;
+  font-size:20px;
+  font-weight:bold;
+  text-align:center;
+}
+
+/* Centered container for login or messages */
+.center-box {
+  max-width: 400px;
+  margin: 80px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+input[type="text"] {
+  width: 90%;
+  padding: 12px;
+  margin: 15px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size:16px;
+}
+
+button {
+  width: 95%;
+  padding: 12px;
+  border:none;
+  border-radius: 8px;
+  background: #0b6623;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover {
+  background:#084d1a;
+}
+
+.message-box {
+  display:none;
+  padding: 20px;
+  margin-top: 20px;
+  background:#ffe6e6;
+  color:#b30000;
+  font-weight:bold;
+  border-radius: 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">Flexi CBT Login</div>
+
+<div class="center-box" id="loginBox">
+  <h2>Enter Your Name</h2>
+  <input type="text" id="candidateNameInput" placeholder="Your full name">
+  <button id="startExamBtn">Start Exam</button>
+
+  <div class="message-box" id="messageBox">Exam Not Found</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+// ====== Firebase Config ======
+const firebaseConfig = {
+  apiKey: "AIzaSyCPumFid5YNTWug52q2VDtSDQTLU9REgss",
+  authDomain: "flexi-tutors.firebaseapp.com",
+  projectId: "flexi-tutors",
+  storageBucket: "flexi-tutors.firebasestorage.app",
+  messagingSenderId: "320176672406",
+  appId: "1:320176672406:web:90f19511241e51c6437cb7",
+  measurementId: "G-Z9P1G4K0SY"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ====== DOM Elements ======
+const messageBox = document.getElementById("messageBox");
+const startBtn = document.getElementById("startExamBtn");
+const nameInput = document.getElementById("candidateNameInput");
+
+// ====== Normalize name ======
+function normalizeName(name) {
+  return name
+    .trim()
+    .toLowerCase(); // for comparison
+}
+
+function formatNameForStorage(name) {
+  // Capitalize first letter of each word
+  return name
+    .trim()
+    .toLowerCase()
+    .split(" ")
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+// ====== Check Exam Time ======
+function checkExamTime() {
+  const now = new Date();
+  const deadline = new Date("2026-01-18T00:00:00"); // 12AM Sunday 18 Jan 2026
+  if (now >= deadline) {
+    messageBox.innerText = "⛔ The exam is now closed. You can no longer take the test.";
+    messageBox.style.display = "block";
+    startBtn.disabled = true;
+    return false;
+  }
+  return true;
+}
+
+// ====== Check if candidate already took exam ======
+async function checkCandidateName(name) {
+  const normalizedInput = normalizeName(name);
+  const querySnapshot = await getDocs(collection(db, "cbtResults"));
+
+  for (let doc of querySnapshot.docs) {
+    const dbName = normalizeName(doc.data().name || "");
+    if (dbName === normalizedInput) {
+      return true; // already taken
+    }
+  }
+  return false;
+}
+
+// ====== Start Exam ======
+startBtn.addEventListener("click", async () => {
+  const candidateName = nameInput.value.trim();
+  if (!candidateName) {
+    messageBox.innerText = "⚠️ Please enter your full name.";
+    messageBox.style.display = "block";
+    return;
+  }
+
+  // Time check
+  if (!checkExamTime()) return;
+
+  // Duplicate check
+  const alreadyTaken = await checkCandidateName(candidateName);
+  if (alreadyTaken) {
+    messageBox.innerText = "⚠️ You have already taken the exam. Only one attempt is allowed.";
+    messageBox.style.display = "block";
+    return;
+  }
+
+  // Save formatted name and continue
+  const formattedName = formatNameForStorage(candidateName);
+  localStorage.setItem("candidateName", formattedName);
+  window.location.href = "page2.html";
+});
+
+// ====== Run on page load ======
+checkExamTime();
+</script>
+</body>
+</html>

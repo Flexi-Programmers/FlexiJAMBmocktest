@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexi CBT – Subject Selection</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#f4f6f4;
+}
+
+/* HEADER */
+.header{
+  background:#0b6623;
+  color:white;
+  padding:12px 18px;
+  font-size:18px;
+  font-weight:bold;
+}
+
+/* CONTAINER */
+.container{
+  max-width:480px;
+  margin:40px auto;
+  background:white;
+  padding:25px;
+  border:1px solid #c8e6c9;
+}
+
+/* TITLE */
+h2{
+  text-align:center;
+  color:#0b6623;
+  margin-top:0;
+}
+
+/* SUBJECT LIST */
+.subject{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 0;
+  border-bottom:1px solid #eee;
+}
+.subject input{
+  transform:scale(1.2);
+  accent-color:#0b6623;
+}
+.subject.locked{
+  opacity:0.6;
+}
+
+/* COUNTER */
+.counter{
+  text-align:center;
+  margin:15px 0;
+  font-weight:bold;
+  color:#333;
+}
+
+/* BUTTON */
+button{
+  width:100%;
+  padding:12px;
+  background:#0b6623;
+  color:white;
+  border:none;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{
+  background:#084d1a;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  Flexi CBT Simulator
+</div>
+
+<!-- SUBJECT SELECTION -->
+<div class="container">
+  <h2>Select Subjects</h2>
+
+  <div class="counter" id="counter">1 / 4 selected</div>
+
+  <!-- ENGLISH (LOCKED) -->
+  <div class="subject locked">
+    <input type="checkbox" checked disabled>
+    <label>English</label>
+  </div>
+
+  <!-- OTHER SUBJECTS -->
+  <div class="subject">
+    <input type="checkbox" class="subjectBox" value="Maths">
+    <label>Mathematics</label>
+  </div>
+
+  <div class="subject">
+    <input type="checkbox" class="subjectBox" value="Physics">
+    <label>Physics</label>
+  </div>
+
+  <div class="subject">
+    <input type="checkbox" class="subjectBox" value="Chemistry">
+    <label>Chemistry</label>
+  </div>
+
+  <div class="subject">
+    <input type="checkbox" class="subjectBox" value="Biology">
+    <label>Biology</label>
+  </div>
+
+  <div class="subject">
+    <input type="checkbox" class="subjectBox" value="Account">
+    <label>Accounting</label>
+  </div>
+
+  <div class="subject">
+    <input type="checkbox" class="subjectBox" value="Economics">
+    <label>Economics</label>
+  </div>
+
+<div class="subject">
+  <input type="checkbox" class="subjectBox" value="Commerce"><label>Commerce</label>
+</div>
+  <div class="subject">
+    <input type="checkbox" class="subjectBox" value="Government">
+    <label>Government</label>
+  </div>
+
+  <div class="subject">
+    <input type="checkbox" class="subjectBox" value="Literature">
+    <label>Literature in English</label>
+  </div>
+
+  <br>
+  <button onclick="proceed()">Proceed to Instructions</button>
+</div>
+
+<script>
+const boxes = document.querySelectorAll(".subjectBox");
+const counter = document.getElementById("counter");
+
+// Map checkbox values to exact JSON keys
+const valueMap = {
+  "Maths": "Mathematics",
+  "Physics": "Physics",
+  "Chemistry": "Chemistry",
+  "Biology": "Biology",
+  "Account": "Accounting",
+  "Economics": "Economics",
+  "Commerce": "Commerce",
+  "Government": "Government",
+  "Literature": "Literature_in_English"
+};
+
+// Update counter
+function updateCounter() {
+  const checked = document.querySelectorAll(".subjectBox:checked").length;
+  const total = checked + 1; // English is compulsory
+  counter.textContent = total + " / 4 selected";
+}
+
+// Limit to 3 additional subjects
+boxes.forEach(box => {
+  box.addEventListener("change", () => {
+    const checked = document.querySelectorAll(".subjectBox:checked").length;
+    if (checked > 3) {
+      box.checked = false;
+      alert("You can only select 3 additional subjects with English.");
+      return;
+    }
+    updateCounter();
+  });
+});
+
+// Proceed button
+function proceed() {
+  const selected = ["English"]; // compulsory
+
+  document.querySelectorAll(".subjectBox:checked").forEach(box => {
+    const mapped = valueMap[box.value];
+    if (!mapped) {
+      console.error("Invalid subject selected:", box.value);
+    } else {
+      selected.push(mapped);
+    }
+  });
+
+  if (selected.length !== 4) {
+    alert("You must select exactly 4 subjects including English.");
+    return;
+  }
+
+  console.log("Subjects saved to localStorage:", selected);
+  localStorage.setItem("selectedSubjects", JSON.stringify(selected));
+
+  // Go to instructions page
+  window.location.href = "page3.html";
+}
+
+// initialize counter
+updateCounter();
+</script>
+
+</body>
+</html>
