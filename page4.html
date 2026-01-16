@@ -461,15 +461,20 @@ function render() {
   const optBox = document.getElementById("options");
   optBox.innerHTML = "";
 
-  // Randomize options order
+  // Get option keys and shuffle them
   const keys = Object.keys(q.options);
   const shuffledKeys = shuffleArray(keys);
 
+  // Render each shuffled option as a button circle
   shuffledKeys.forEach(key => {
     const btn = document.createElement("button");
     btn.className = "option-circle";
-    btn.textContent = q.options[key]; // show only option text
+
+    // Highlight if selected
     if (answers[currentSubject][qIndex] === key) btn.classList.add("selected");
+
+    // Show only the option text
+    btn.textContent = q.options[key];
 
     btn.onclick = () => {
       answers[currentSubject][qIndex] = key;
@@ -480,7 +485,7 @@ function render() {
     optBox.appendChild(btn);
   });
 
-  renderNums();
+  renderNums(); // This should be inside render() and no extra closing brace here
 }
 
 /* ================= QUESTION NUMBERS ================= */
