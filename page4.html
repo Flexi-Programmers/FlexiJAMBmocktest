@@ -441,14 +441,11 @@ function shuffleArray(array) {
   return arr;
 }
 
-/* ================= SHUFFLE QUESTIONS ================= */
-subjects.forEach(sub => {
-  filteredExamData[sub] = shuffleArray(filteredExamData[sub]);
-});
+/* ================= SHUFFLE QUESTIONS AND OPTIONS ================= */
+subjects.forEach(sub => filteredExamData[sub] = shuffleArray(filteredExamData[sub]));
 
-/* ================= OPTION ORDER (🔥 FIX) ================= */
+// Stable option order per question
 let optionOrder = {};
-
 subjects.forEach(sub => {
   optionOrder[sub] = {};
   filteredExamData[sub].forEach((q, i) => {
@@ -460,10 +457,19 @@ subjects.forEach(sub => {
 let currentSubject = subjects[0];
 let qIndex = 0;
 let answers = {};
+subjects.forEach(s => answers[s] = Array(filteredExamData[s].length).fill(null));
 
-subjects.forEach(s => {
-  answers[s] = Array(filteredExamData[s].length).fill(null);
-});
+// Restore saved answers if present
+const savedAnswers = JSON.parse(localStorage.getItem("cbt_answers"));
+if (savedAnswers) {
+  subjects.forEach(sub => {
+    if (savedAnswers[sub]) answers[sub] = savedAnswers[sub];
+  });
+}
+const savedSubject = localStorage.getItem("cbt_currentSubject");
+const savedIndex = localStorage.getItem("cbt_qIndex");
+if (savedSubject && subjects.includes(savedSubject)) currentSubject = savedSubject;
+if (savedIndex !== null) qIndex = parseInt(savedIndex, 10);
 
 /* ================= AUTOSAVE ================= */
 function autoSave() {
@@ -475,11 +481,10 @@ function autoSave() {
 /* ================= SUBJECT TABS ================= */
 const tabsBox = document.getElementById("subjectTabs");
 tabsBox.innerHTML = "";
-
 subjects.forEach((sub, idx) => {
   const tab = document.createElement("div");
   tab.className = "subject-tab";
-  if (idx === 0) tab.classList.add("active");
+  if (sub === currentSubject) tab.classList.add("active");
   tab.textContent = sub;
   tab.onclick = () => switchSubject(sub);
   tabsBox.appendChild(tab);
@@ -488,30 +493,21 @@ subjects.forEach((sub, idx) => {
 /* ================= RENDER QUESTION ================= */
 function render() {
   const q = filteredExamData[currentSubject][qIndex];
-  document.getElementById("questionText").textContent =
-    `${qIndex + 1}. ${q.question}`;
-
+  document.getElementById("questionText").textContent = `${qIndex + 1}. ${q.question}`;
   const optBox = document.getElementById("options");
   optBox.innerHTML = "";
 
   const keys = optionOrder[currentSubject][qIndex];
-
   keys.forEach(key => {
     const btn = document.createElement("button");
     btn.className = "option-circle";
-
-    if (answers[currentSubject][qIndex] === key) {
-      btn.classList.add("selected");
-    }
-
     btn.textContent = q.options[key];
-
+    if (answers[currentSubject][qIndex] === key) btn.classList.add("selected");
     btn.onclick = () => {
       answers[currentSubject][qIndex] = key;
       autoSave();
       render();
     };
-
     optBox.appendChild(btn);
   });
 
@@ -522,16 +518,11 @@ function render() {
 function renderNums() {
   const box = document.getElementById("qnums");
   box.innerHTML = "";
-
   filteredExamData[currentSubject].forEach((_, i) => {
     const n = document.createElement("div");
-    n.className = "qnum " + (answers[currentSubject][i] ? "green" : "red");
+    n.className = "qnum " + (answers[currentSubject][i] !== null ? "green" : "red");
     n.textContent = i + 1;
-    n.onclick = () => {
-      qIndex = i;
-      autoSave();
-      render();
-    };
+    n.onclick = () => { qIndex = i; autoSave(); render(); };
     box.appendChild(n);
   });
 }
@@ -540,140 +531,87 @@ function renderNums() {
 function switchSubject(sub) {
   currentSubject = sub;
   qIndex = 0;
-
-  document.querySelectorAll(".subject-tab")
-    .forEach(t => t.classList.remove("active"));
-
-  [...tabsBox.children]
-    .find(t => t.textContent === sub)
-    .classList.add("active");
-
+  document.querySelectorAll(".subject-tab").forEach(t => t.classList.remove("active"));
+  [...tabsBox.children].find(t => t.textContent === sub).classList.add("active");
   autoSave();
   render();
 }
+
+/* ================= NAVIGATION BUTTONS ================= */
+document.getElementById("prevBtn")?.addEventListener("click", () => {
+  if (qIndex > 0) { qIndex--; autoSave(); render(); }
+});
+document.getElementById("nextBtn")?.addEventListener("click", () => {
+  if (qIndex < filteredExamData[currentSubject].length - 1) { qIndex++; autoSave(); render(); }
+});
 
 /* ================= TIMER ================= */
 let total = 20 * 60;
 const endTime = Date.now() + total * 1000;
 
 const timerInterval = setInterval(() => {
-  const left = Math.max(Math.floor((endTime - Date.now()) / 1000), 0);
+  const left = Math.max(Math.floor((endTime - Date.now())/1000),0);
   const m = Math.floor(left / 60);
   const s = left % 60;
-
   document.getElementById("timeText").textContent =
-    `00:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-
-  document.getElementById("timerBar").style.width =
-    (left / total) * 100 + "%";
-
+    `00:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
+  document.getElementById("timerBar").style.width = (left/total)*100 + "%";
   if (left <= 0) submitExam();
-}, 200);
+}, 500); // half-second for smoother progress
 
 /* ================= AUTO-SUBMIT ON APP SWITCH ================= */
 async function autoSubmit() {
   clearInterval(timerInterval);
   const result = calculateScore();
-
   try {
-    await setDoc(
-      doc(db, "cbtResults", `${candidateName}_${Date.now()}`),
-      {
-        name: candidateName,
-        subjects,
-        answers,
-        rawScore: result.rawScore,
-        jambScore: result.jambScore,
-        submittedAt: serverTimestamp()
-      }
-    );
+    await setDoc(doc(db,"cbtResults", `${candidateName}_${Date.now()}`), {
+      name: candidateName,
+      subjects,
+      answers,
+      rawScore: result.rawScore,
+      jambScore: result.jambScore,
+      submittedAt: serverTimestamp()
+    });
     alert("You left the exam. Your exam has been auto-submitted.");
   } catch {
     alert("Auto-submit failed.");
   }
 }
-
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) autoSubmit();
+  if(document.hidden) autoSubmit();
 });
 
 /* ================= SCORING ================= */
 function calculateScore() {
-  let raw = 0;
-  let totalQ = 0;
-
+  let raw = 0, totalQ = 0;
   subjects.forEach(sub => {
-    filteredExamData[sub].forEach((q, i) => {
+    filteredExamData[sub].forEach((q,i) => {
       totalQ++;
-      if (answers[sub][i] !== null) {
+      if(answers[sub][i] !== null){
         raw += answers[sub][i] === q.answer ? 1 : -0.25;
       }
     });
   });
-
-  if (raw < 0) raw = 0;
-  return {
-    rawScore: raw.toFixed(2),
-    jambScore: Math.round((raw / totalQ) * 400)
-  };
+  if(raw < 0) raw = 0;
+  return { rawScore: raw.toFixed(2), jambScore: Math.round((raw/totalQ)*400) };
 }
 
-/* ================= NAVIGATION BUTTONS FIX ================= */
-const prevBtn = document.getElementById("prevBtn");
-const nextBtn = document.getElementById("nextBtn");
-
-if (prevBtn) {
-  prevBtn.addEventListener("click", () => {
-    if (qIndex > 0) {
-      qIndex--;
-      autoSave();
-      render();
-    }
-  });
-}
-
-if (nextBtn) {
-  nextBtn.addEventListener("click", () => {
-    if (qIndex < filteredExamData[currentSubject].length - 1) {
-      qIndex++;
-      autoSave();
-      render();
-    }
-  });
-}
-
-/* ================= CALCULATOR (EXPOSE GLOBAL) ================= */
-window.openCalc = function () {
-  document.getElementById("calcModal").style.display = "flex";
-};
-
-window.closeCalc = function () {
-  document.getElementById("calcModal").style.display = "none";
-};
-
-window.press = function (val) {
-  document.getElementById("calcScreen").value += val;
-};
-
-window.calculate = function () {
-  const screen = document.getElementById("calcScreen");
-  try {
-    screen.value = eval(screen.value);
-  } catch {
-    screen.value = "Error";
-  }
+/* ================= CALCULATOR ================= */
+window.openCalc = () => document.getElementById("calcModal").style.display="flex";
+window.closeCalc = () => document.getElementById("calcModal").style.display="none";
+window.press = val => document.getElementById("calcScreen").value+=val;
+window.calculate = () => {
+  try { document.getElementById("calcScreen").value=eval(document.getElementById("calcScreen").value); } 
+  catch { document.getElementById("calcScreen").value="Error"; }
 };
 
 /* ================= SUBMIT ================= */
-window.submitExam = function submitExam() {
+window.submitExam = () => {
   clearInterval(timerInterval);
-
   localStorage.setItem("cbt_answers", JSON.stringify(answers));
   localStorage.setItem("cbt_currentSubject", currentSubject);
   localStorage.setItem("cbt_qIndex", qIndex);
   localStorage.setItem("selectedSubjects", JSON.stringify(subjects));
-
-  // Move to Page 5
   window.location.href = "page5.html";
 };
 

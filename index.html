@@ -103,13 +103,10 @@ const nameInput = document.getElementById("candidateNameInput");
 
 // ====== Normalize name ======
 function normalizeName(name) {
-  return name
-    .trim()
-    .toLowerCase(); // for comparison
+  return name.trim().toLowerCase();
 }
 
 function formatNameForStorage(name) {
-  // Capitalize first letter of each word
   return name
     .trim()
     .toLowerCase()
@@ -118,18 +115,44 @@ function formatNameForStorage(name) {
     .join(" ");
 }
 
-// ====== Check Exam Time ======
-function checkExamTime() {
+// ====== Exam Times ======
+const examStart = new Date("2026-01-17T12:00:00"); // 12 PM
+const examEnd = new Date("2026-01-18T23:59:59");   // 11:59 PM
+
+// ====== Update Countdown ======
+function updateExamTime() {
   const now = new Date();
-  const deadline = new Date("2026-01-18T00:00:00"); // 12AM Sunday 18 Jan 2026
-  if (now >= deadline) {
-    messageBox.innerText = "⛔ The exam is now closed. You can no longer take the test.";
+
+  if (now < examStart) {
+    const diff = examStart - now;
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    messageBox.innerHTML = `
+      ⏳ Exam  starts <strong>${hours.toString().padStart(2,'0')}h :
+      ${minutes.toString().padStart(2,'0')}m :
+      ${seconds.toString().padStart(2,'0')}s</strong>
+    `;
     messageBox.style.display = "block";
     startBtn.disabled = true;
     return false;
+  } else if (now > examEnd) {
+    messageBox.innerHTML = "⛔ The exam has closed. You can no longer take the test.";
+    messageBox.style.display = "block";
+    startBtn.disabled = true;
+    return false;
+  } else {
+    messageBox.style.display = "none";
+    startBtn.disabled = false;
+    return true;
   }
-  return true;
 }
+
+// ====== Live Countdown Timer ======
+setInterval(updateExamTime, 1000);
+updateExamTime(); // initial call
 
 // ====== Check if candidate already took exam ======
 async function checkCandidateName(name) {
@@ -138,9 +161,7 @@ async function checkCandidateName(name) {
 
   for (let doc of querySnapshot.docs) {
     const dbName = normalizeName(doc.data().name || "");
-    if (dbName === normalizedInput) {
-      return true; // already taken
-    }
+    if (dbName === normalizedInput) return true;
   }
   return false;
 }
@@ -155,7 +176,7 @@ startBtn.addEventListener("click", async () => {
   }
 
   // Time check
-  if (!checkExamTime()) return;
+  if (!updateExamTime()) return;
 
   // Duplicate check
   const alreadyTaken = await checkCandidateName(candidateName);
@@ -170,9 +191,6 @@ startBtn.addEventListener("click", async () => {
   localStorage.setItem("candidateName", formattedName);
   window.location.href = "page2.html";
 });
-
-// ====== Run on page load ======
-checkExamTime();
 </script>
 </body>
 </html>
