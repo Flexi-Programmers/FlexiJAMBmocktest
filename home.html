@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Flexi Tutors</title>
+
+<style>
+  /* Base */
+  :root { --green:#3cb371; --green-dark:#2e7d32; --blue:#007bff; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f8ff;
+    margin: 0;
+    color: #333;
+  }
+
+  /* Header / Nav */
+  header {
+    background: var(--green);
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+  }
+  nav {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  nav a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  nav a:hover { text-decoration: underline; }
+  .menu-icon {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 26px;
+    cursor: pointer;
+    display: none;
+  }
+  @media (max-width: 768px) {
+    nav {
+      display: none;
+      flex-direction: column;
+      background-color: var(--green);
+      position: absolute;
+      top: 60px;
+      right: 0;
+      width: 220px;
+      padding: 10px;
+    }
+    nav a {
+      display: block;
+      padding: 10px;
+      border-bottom: 1px solid var(--green-dark);
+    }
+    .menu-icon { display: block; }
+  }
+
+  /* Hero */
+  .hero {
+    background: #e0f2f1;
+    padding: 50px 20px;
+    text-align: center;
+  }
+  .hero h1 {
+    margin: 0 0 10px;
+    font-size: 2.5em;
+    color: var(--green-dark);
+  }
+  .hero p { font-size: 1.2em; }
+  .section { padding: 24px 20px; max-width: 1000px; margin: 0 auto; }
+
+  /* Buttons / links used as buttons */
+  .button, .btn {
+    display: inline-block;
+    background-color: var(--green);
+    color: #fff !important;
+    padding: 10px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .button:hover, .btn:hover { background: var(--green-dark); }
+
+  /* Services */
+  .services {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 40px 20px;
+    gap: 20px;
+  }
+  .service-item {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    width: 280px;
+    padding: 20px;
+    text-align: center;
+  }
+  .service-item h3, .service-item h2 {
+    color: var(--green);
+    margin-bottom: 10px;
+  }
+
+  /* FAQ */
+  .faq-section {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  .faq-section h2 {
+    color: var(--green-dark);
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .faq {
+    background: #fff;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    padding: 15px 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .faq h4 {
+    cursor: pointer;
+    margin: 0;
+    position: relative;
+    padding-right: 25px;
+  }
+  .faq h4::after {
+    content: '+';
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 1.5em;
+    line-height: 1;
+  }
+  .faq.open h4::after { content: '-'; }
+  .faq p { display: none; margin-top: 10px; }
+  .faq.open p { display: block; }
+
+  /* Contact */
+  .contact-section {
+    background: #e0f2f1;
+    padding: 40px 20px;
+    max-width: 600px;
+    margin: 0 auto 60px;
+    border-radius: 10px;
+  }
+  .contact-section h2 {
+    color: var(--green-dark);
+    text-align: center;
+    margin-bottom: 25px;
+  }
+  form { display: flex; flex-direction: column; }
+  label { margin-bottom: 5px; font-weight: 600; }
+  input, textarea {
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 2px solid var(--green);
+    border-radius: 5px;
+    font-size: 1em;
+  }
+  button {
+    background-color: var(--green);
+    color: #fff;
+    border: none;
+    padding: 15px;
+    font-size: 1.1em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover { background-color: var(--green-dark); }
+
+  body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1; /* pushes footer down */
+}
+
+footer {
+  background: #333;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+}
+
+  /* Floating buttons */
+  .whatsapp-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #25d366;
+    color: white;
+    padding: 12px 15px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 20px;
+    z-index: 1000;
+  }
+  .ai-bot {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background-color: var(--blue);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 1000;
+  }
+
+  /* Education updates */
+  .education-updates {
+    background: #f9f9f9;
+    padding: 40px 20px;
+    text-align: center;
+    margin: 40px 0;
+    border-radius: 10px;
+  }
+  .education-updates h2 {
+    color: var(--green-dark);
+    margin-bottom: 20px;
+    font-size: 2em;
+  }
+  #feed { max-width: 700px; margin: 0 auto; text-align: left; }
+  #feed .item { border-bottom: 1px solid #ddd; padding: 15px 0; }
+  #feed .title {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--blue);
+    text-decoration: none;
+  }
+  #feed .title:hover { text-decoration: underline; }
+  #feed .pubDate { font-size: 0.9em; color: gray; margin-top: 5px; }
+
+  @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+  @keyframes slideUp { from {transform: translateY(20px);} to {transform: translateY(0);} }
+</style>
+</head>
+<body>
+
+<header>
+ <img src="https://i.imgur.com/uXUwmkC.png" alt="Logo"
+    style="height: 150px; width: 150px; border-radius: 50%; background: white; padding: 2px; vertical-align: middle; margin-right: 8px;">
+  <h1>Flexi Tutors</h1>
+  <div class="menu-icon" onclick="toggleMenu()">☰</div>
+  <nav id="mainNav" role="navigation" aria-label="Main">
+    <a href="Amacoz.html" id="menuLogin">Login</a>
+    <a href="#about">About Us</a>
+    <a href="#services">Services</a>
+    <a href="#cbt">CBT Simulator</a>
+    <a href="#contact">Contact</a>
+    <a href="#location">Locate us</a>
+    <a href="#download-App">Download App</a>
+  </nav>
+</header>
+<main>
+<!-- Welcome Message -->
+<div id="welcome" style="text-align:center; font-size:1.5rem; font-weight:bold; margin-top:20px;"></div>
+<button id="loginBtn" onclick="window.location.href='Amacoz.html'">Login</button>
+<button id="logoutBtn" style="display:none;">Logout</button>
+<!-- Hero, Services, FAQ, Contact, etc. remain the same -->
+
+<section class="hero" id="about">
+  <h1 id="heroText">Welcome to Flexi Tutors</h1>
+  <p>Your trusted partner for exam tips and academic success!</p>
+
+  <div style="text-align: center; margin-top: 50px;">
+     <h2>Enter Subject PIN to get answers</h2>
+     <input type="text" id="pinInput" placeholder="e.g., 689" />
+     <br><br>
+     <button onclick="checkPin()">Access</button>
+     <div id="error" style="color: red; margin-top: 10px;"></div>
+   </div>
+</section>
+
+<section class="services" id="services">
+  <div class="service-item">
+    <h2>Result Checker</h2>
+    <p>Get your WAEC and NECO result checker here</p>
+    <a class="button" href="https://wisdomuko2008.github.io/Jambrunz/" target="_blank" rel="noopener">Check Results</a>
+  </div>
+  <div class="service-item">
+    <h3>WAEC Exam Tips</h3>
+    <p>Get expert advice and techniques to excel in your WAEC exams.</p>
+  </div>
+  <div class="service-item">
+    <h3>JAMB Preparation</h3>
+    <p>Effective tutorials and practice questions for your JAMB success.</p>
+  </div>
+  <div class="service-item">
+    <h3>Post-UTME Tutorials</h3>
+    <p>Comprehensive coaching tailored to your university admission needs.</p>
+  </div>
+  <div class="service-item">
+    <h3>Flexible Online Classes</h3>
+    <p>Learn from anywhere with our interactive and flexible online sessions.</p>
+  </div>
+</section>
+
+<section id="cbt">
+  <h2 style="text-align:center;color:#2e7d32;">CBT Simulator</h2>
+  <p style="text-align:center;">
+    Practice with our JAMB/WAEC CBT simulation tools.
+    <a href="Calculus.html" target="_blank" rel="noopener">JAMB CBT Practice</a>
+  </p>
+</section>
+
+<section id="WhatsApp-us" style="text-align:center;margin:30px 0;">
+  <h2 style="color:#2e7d32;">Linked Resource</h2>
+  <p>Click below to message us on WhatsApp</p>
+  <a class="btn" href="https://wa.me/2347051768946?text=Hi%20I%E2%80%99m%20interested%20in%20JAMB%202026%20preparation.%20Can%20you%20assist%20me?" target="_blank" rel="noopener">Chat on WhatsApp</a>
+</section>
+
+<div class="section">
+  <h2>📚 FlexiTV Hub</h2>
+  <p>Watch FlexiTV to gain tips for your exam</p>
+  <a class="button" href="https://wisdomuko2008.github.io/Videopage/" target="_blank" rel="noopener">Watch FlexiTV Hub</a>
+</div>
+
+<section class="faq-section" id="faq">
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq">
+    <h4>How do I register for Flexi Tutors classes?</h4>
+    <p>You can register by contacting us via WhatsApp or Telegram through the contact info below.</p>
+  </div>
+  <div class="faq">
+    <h4>Are your tutorials online or physical?</h4>
+    <p>We primarily offer online classes to make learning flexible and accessible to everyone.</p>
+  </div>
+  <div class="faq">
+    <h4>What subjects do you cover?</h4>
+    <p>We cover WAEC, JAMB, and Post-UTME topics with expert tutors in English, Mathematics, Science, and General Knowledge.</p>
+  </div>
+  <div class="faq">
+    <h4>How can I get exam tips and updates?</h4>
+    <p>Follow us on WhatsApp and Telegram for daily exam tips, updates, and practice questions.</p>
+  </div>
+</section>
+
+<section id="location" style="padding: 2rem; background-color: #f9f9f9;">
+  <h2 style="text-align: center; font-size: 2rem; margin-bottom: 1rem;">Our Location</h2>
+  <iframe
+    src="https://www.google.com/maps?q=6+Awofeso+Street,+Ladi-Lak,+off+Kajola+Bus+stop,+Bariga,+Lagos,+Nigeria&output=embed"
+    width="100%" height="300" style="border:0; border-radius: 10px;"
+    allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Our Location">
+  </iframe>
+</section>
+
+<div class="section">
+  <h2>📚 Study Materials</h2>
+  <p>Download free eBooks, syllabuses, and past questions to guide your JAMB and WAEC Preparation</p>
+  <a class="button" href="https://t.me/guko92396" target="_blank" rel="noopener">Download Materials</a>
+</div>
+
+<div class="section" id="download-App">
+  <h2>Mobile app</h2>
+  <p>Get our mobile app for Android. iOS version coming soon</p>
+  <a class="button" href="https://www.dropbox.com/scl/fi/mmavwavmyg4kuc3uzy209/_Flexi_Tutors_19009924.apk?rlkey=y2rouc1j8t9xa5rz8t1lre0e2&st=ntnd6hny&dl=0" target="_blank" rel="noopener">Download App</a>
+</div>
+
+<section id="education-updates" class="education-updates">
+  <h2>📢 Latest Education Updates</h2>
+  <div id="feed" aria-live="polite"></div>
+</section>
+
+<section class="contact-section" id="contact">
+  <h2>Contact Us</h2>
+  <form action="https://formsubmit.co/flexitutors2000@gmail.com" method="POST">
+    <label for="name">Full Name</label>
+    <input type="text" id="name" name="name" placeholder="Your full name" required />
+
+    <label for="email">Email Address</label>
+    <input type="email" id="email" name="email" placeholder="Your email" required />
+
+    <label for="message">Message</label>
+    <textarea id="message" name="message" rows="5" placeholder="Your message here" required></textarea>
+
+    <input type="hidden" name="_captcha" value="false">
+    <button type="submit">Send Message</button>
+  </form>
+</section>
+</main>
+<footer>
+  <p>Contact us: WhatsApp: 0705 176 8946 | Telegram: @flexitutors</p>
+  <p>&copy; 2025 Flexi Tutors. All rights reserved.</p>
+</footer>
+</body>
+
+<a class="whatsapp-float"
+   href="https://wa.me/2349034159839?text=Hi%20I%E2%80%99m%20interested%20in%20exams%20Tips%20and%20preparation.%20Can%20you%20assist%20me?"
+   target="_blank" rel="noopener" title="Chat with us on WhatsApp" aria-label="Chat with us on WhatsApp">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+       alt="WhatsApp" style="width:28px;height:28px;vertical-align:middle;">
+</a>
+
+<div class="ai-bot" onclick="window.open('https://wisdomuko2008.github.io/JAMBassist-', '_blank')">💬</div>
+
+
+<script>
+  // Mobile menu
+  function toggleMenu() {
+    const menu = document.getElementById('mainNav');
+    const isOpen = menu.style.display === 'flex';
+    menu.style.display = isOpen ? 'none' : 'flex';
+  }
+  window.addEventListener('resize', () => {
+    const menu = document.getElementById('mainNav');
+    menu.style.display = window.innerWidth > 768 ? 'flex' : 'none';
+  });
+
+  // FAQ toggles
+  document.querySelectorAll('.faq h4').forEach(h => {
+    h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+  });
+
+  // Education Updates
+  const feedUrl = "https://api.rss2json.com/v1/api.json?rss_url=https://https://rss.app/feeds/ZZ2oDYMHZQaVpvIS.xml";
+  function loadEducationUpdates() {
+    fetch(feedUrl)
+      .then(r => r.json())
+      .then(data => {
+        const feedContainer = document.getElementById("feed");
+        feedContainer.innerHTML = "";
+        if (!data.items || data.items.length === 0) {
+          feedContainer.innerText = "No updates available right now.";
+          return;
+        }
+        data.items.slice(0,5).forEach(item => {
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "item";
+          itemDiv.innerHTML = `
+            <a href="${item.link}" target="_blank" rel="noopener" class="title">${item.title}</a>
+            <div class="pubDate">${new Date(item.pubDate).toLocaleDateString()}</div>
+          `;
+          feedContainer.appendChild(itemDiv);
+        });
+      })
+      .catch(() => {
+        document.getElementById("feed").innerText = "Failed to load education updates.";
+      });
+  }
+  loadEducationUpdates();
+  setInterval(loadEducationUpdates, 300000);
+
+
+  // Subject PIN check
+  const pinLinks = {
+    "095": "https://example.com/english",
+    "196": "https://example.com/mathematics",
+    "546": "https://example.com/economics",
+    "936": "https://example.com/geography",
+    "362": "https://example.com/biology",
+    "928": "https://example.com/agricultural-science",
+    "529": "https://example.com/civic-education",
+    "839": "https://example.com/commerce",
+    "829": "https://example.com/financial-accounting",
+    "897": "https://example.com/chemistry",
+    "734": "https://example.com/crs",
+    "989": "https://example.com/igbo",
+    "629": "https://example.com/physics",
+    "973": "https://example.com/yoruba",
+    "739": "https://example.com/animal-husbandry",
+    "852": "https://example.com/construction",
+    "596": "https://example.com/computer-engineering",
+    "749": "https://example.com/electronic-data-processing",
+    "894": "https://example.com/food-and-nutrition",
+    "473": "https://example.com/government",
+    "668": "https://example.com/applied-electricity",
+    "707": "https://example.com/auto-electrical-work",
+    "404": "https://example.com/business-management",
+    "323": "https://example.com/business-management"
+  };
+  function checkPin() {
+    const pin = document.getElementById("pinInput").value.trim();
+    const errorDiv = document.getElementById("error");
+    if (pinLinks[pin]) {
+      window.location.href = pinLinks[pin];
+    } else {
+      errorDiv.textContent = "Incorrect PIN. Please try again.";
+    }
+  }
+  </script>
+  ...
+  <!-- other scripts you already have -->
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaVTwzI_0h0RVdh_ASDDqdsvrg_3oHPSs",
+    authDomain: "flexi-702a9.firebaseapp.com",
+    projectId: "flexi-702a9",
+    storageBucket: "flexi-702a.appspot.com",
+    messagingSenderId: "647814322831",
+    appId: "1:647814322831:web:74fc00cfc62abdc7e76efa"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Protect page + set welcome name
+  onAuthStateChanged(auth, (user) => {
+    const welcome = document.getElementById("welcome");
+    const loginLink = document.getElementById("menuLogin");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (user) {
+      // Show first + last name (if stored in displayName)
+      let username = user.displayName || "User";
+
+      if (welcome) welcome.innerText = `Welcome, ${username}`;
+      if (loginLink) loginLink.style.display = "none";
+      if (logoutBtn) logoutBtn.style.display = "inline-block";
+    } else {
+      // Not logged in → redirect to login page
+      window.location.href = "index.html";
+    }
+  });
+
+  // Logout handler
+  document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+    await signOut(auth);
+    window.location.href = "index.html"; // change if your homepage is different
+  });
+</script>
+</body>
+</html>

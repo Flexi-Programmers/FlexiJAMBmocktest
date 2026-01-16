@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Flexi Tutors — Differential Calculus CBT (PDF results)</title>
+
+<!-- html2pdf (includes html2canvas + jspdf) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+:root{
+  --bg:#f3f6fb; --card:#ffffff; --accent:#0b5fff; --muted:#6b7280;
+  --glass: rgba(11,95,255,0.06); --success:#16a34a; --danger:#ef4444;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#f8fbff 0%,var(--bg) 100%);color:#0f172a}
+.container{max-width:980px;margin:0 auto;padding:18px}
+.site-header{background:#072b5b;color:white;box-shadow:0 6px 18px rgba(3,23,64,0.08)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 18px}
+.brand{font-weight:800;font-size:20px}
+.header-right{display:flex;align-items:center;gap:12px}
+.timer{background:rgba(255,255,255,0.06);padding:6px 10px;border-radius:8px;font-weight:700}
+.btn{background:var(--accent);color:white;border:0;padding:10px 14px;border-radius:8px;font-weight:700;cursor:pointer}
+.btn:hover{opacity:.95}
+.btn-ghost{background:transparent;border:1px solid rgba(11,95,255,0.12);padding:9px 12px;border-radius:8px;color:var(--accent);cursor:pointer}
+.main{padding:28px 12px}
+.card{background:var(--card);border-radius:12px;padding:22px;margin:18px 0;box-shadow:0 10px 30px rgba(11,23,47,0.06)}
+.title{margin:0 0 8px 0}
+.hero{display:flex;align-items:center;justify-content:center;min-height:60vh}
+.hero-card{width:100%;max-width:900px;background:linear-gradient(180deg,#fff 0%,#fbfeff 100%);padding:36px;border-radius:12px;display:flex;gap:24px;align-items:center}
+.hero-left{flex:1}
+.h1{font-size:28px;margin:0;color:var(--accent);font-weight:800}
+.lead{color:var(--muted);margin-top:8px}
+.input{width:100%;padding:12px;border-radius:8px;border:1px solid #e6eefb;font-size:16px;margin-top:10px}
+.small-muted{color:var(--muted)}
+.row{display:flex;gap:12px}
+.center{text-align:center}
+.exam-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.question-card{background:#fbfdff;padding:18px;border-radius:10px;border:1px solid #eef6ff;min-height:200px}
+.question-text{font-weight:700;font-size:18px;margin-bottom:12px}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;border:1px solid #eef6ff;cursor:pointer}
+.option input{transform:scale(1.05)}
+.exam-controls{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px;flex-wrap:wrap}
+.qa-nav{display:flex;gap:8px;flex-wrap:wrap}
+.qa-nav button{width:40px;height:40px;border-radius:8px;background:#f1f5f9;border:1px solid #e6eefb;color:#0f172a;cursor:pointer}
+.qa-nav button.answered{background:var(--accent);color:white}
+.qa-nav button.active{border:2px solid var(--accent)}
+.controls-right{display:flex;gap:8px}
+.scoreBig{font-size:44px;font-weight:800;color:var(--accent);margin-top:10px}
+.scoreGreeting{font-weight:700;font-size:18px}
+.site-footer{background:#fff;margin-top:22px;padding:18px;border-top:1px solid #eef2ff;text-align:center;color:var(--muted)}
+
+/* Calculator modal */
+.calc-modal{position:fixed;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(5,10,24,0.4);z-index:1200}
+.calc-card{width:320px;background:white;border-radius:12px;padding:14px;box-shadow:0 20px 50px rgba(3,23,64,0.2)}
+.calc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.calc-display{width:100%;padding:10px;border-radius:8px;border:1px solid #eef6ff;font-size:18px;margin-bottom:8px;text-align:right}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.calc-grid button{padding:12px;border-radius:8px;border:1px solid #eef6ff;background:#fff;cursor:pointer}
+
+/* hidden utility */
+.hidden{display:none}
+
+/* small print styling for PDF view */
+.pdf-result { font-family: Arial, Helvetica, sans-serif; color:#111; }
+.pdf-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.pdf-title { font-size:20px; font-weight:700; color:#0b5fff; }
+.pdf-meta { font-size:12px; color:#444; }
+.pdf-question { margin-bottom:10px; }
+.pdf-q-title { font-weight:700; }
+.correct { color:var(--success); font-weight:600; }
+.wrong { color:var(--danger); font-weight:600; }
+
+/* Corrections small UI */
+.corrections-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:12px; flex-wrap:wrap; }
+.corrections-nav { display:flex; gap:8px; flex-wrap:wrap; }
+.correction-card { background:#fff; padding:16px; border-radius:8px; border:1px solid #eef6ff; }
+.correction-meta { color:var(--muted); margin-bottom:8px; }
+.correction-explanation { margin-top:12px; color:#1f2937; }
+.summary-table { border-collapse: collapse; width:100%; margin-top:12px; }
+.summary-table th, .summary-table td { border:1px solid #e6eefb; padding:8px; text-align:center; }
+.rating-badge { display:inline-block; padding:6px 10px; border-radius:8px; font-weight:700; }
+.rating-excellent { background:#ecfdf5; color:#065f46; }
+.rating-good { background:#f0f9ff; color:#0c4a6e; }
+.rating-fair { background:#fff7ed; color:#92400e; }
+.rating-poor { background:#fff1f2; color:#7f1d1d; }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">Flexi Tutors</div>
+      <div class="header-right">
+        <button id="openCalcBtn" class="btn-ghost" onclick="toggleCalculator()">Calculator</button>
+        <div id="globalTimer" class="timer">10:00</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main">
+    <!-- Page 1: Welcome / Candidate Name -->
+    <section id="page-name" class="card hero">
+      <div class="hero-card">
+        <div class="hero-left">
+          <div class="h1">Flexi Tutors — Differential Calculus Practice</div>
+          <p class="lead">Practice JAMB-style questions under timed exam conditions. Good luck!</p>
+          <div style="margin-top:18px">
+            <label class="small-muted">Candidate name</label>
+            <input id="candidateName" class="input" placeholder="Enter your full name (e.g. Jane Doe)" />
+            <div style="margin-top:12px">
+              <button class="btn" onclick="toInstructions()">Continue</button>
+            </div>
+          </div>
+       </div>
+     </section>
+
+    <!-- Page 2: Instructions -->
+    <section id="page-instructions" class="card hidden">
+      <h2 class="title">Exam Instructions</h2>
+      <ol class="lead">
+        <li>You will be given <strong>10 random Differential Calculus</strong> questions from a 40-question bank.</li>
+        <li>You have <strong>10 minutes</strong>. The timer starts when you press <em>Start Exam</em>. It will auto-submit when time runs out.</li>
+        <li>Each correct answer = <strong>10 marks</strong>. Total = 100%.</li>
+        <li>Use the navigation buttons to move between questions. You can change answers until submission.</li>
+      </ol>
+      <div style="display:flex;justify-content:space-between;margin-top:16px">
+        <button class="btn-ghost" onclick="backToName()">Back</button>
+        <div>
+          <button onclick="startExam()">Start Exam</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 3: Exam UI -->
+    <section id="page-exam" class="card hidden">
+      <div class="exam-top">
+        <div class="exam-left">
+          <div id="candidateBadge" class="badge small-muted"></div>
+        </div>
+        <div class="exam-right">
+          <div class="small-muted">Question</div>
+          <div id="progressText" class="progressText">1 / 10</div>
+        </div>
+      </div>
+
+      <div id="questionCard" class="question-card"></div>
+
+      <div class="exam-controls">
+        <div class="qa-nav" id="qaNav"></div>
+        <div class="controls-right">
+          <button class="btn-ghost" onclick="prevQuestion()">Previous</button>
+          <button class="btn-ghost" onclick="nextQuestion()">Next</button>
+          <button class="btn" onclick="submitExam()">Submit</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 4: Score -->
+    <section id="page-score" class="card hidden center">
+      <h2 class="title">Score Report</h2>
+      <div id="scoreGreeting" class="scoreGreeting"></div>
+      <div id="scoreBig" class="scoreBig">0%</div>
+      <div id="scoreDetails" class="small-muted"></div>
+      <div style="margin-top:18px">
+        <button class="btn" onclick="openCorrections()">View Corrections & Explanations</button>
+        <button class="btn-ghost" onclick="retakeExam()">Retake (New Random)</button>
+        <button class="btn-ghost" onclick="printResults()">Print Results</button>
+        <button class="btn-ghost" onclick="downloadResultsPDF()">Download PDF</button>
+      </div>
+    </section>
+
+    <!-- Page 5: Corrections -->
+    <section id="page-corrections" class="card hidden">
+      <h2 class="title">Corrections & Explanations</h2>
+
+      <div class="corrections-top">
+        <div class="corrections-nav" id="correctionsNav"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-ghost" onclick="prevCorrection()">Previous</button>
+          <button class="btn-ghost" onclick="nextCorrection()">Next</button>
+        </div>
+      </div>
+
+      <div id="correctionDisplay" class="correction-card">
+        <!-- Single correction will render here -->
+      </div>
+
+      <div style="margin-top:12px;text-align:right">
+        <button class="btn-ghost" onclick="downloadResultsPDF()">Download Summary PDF</button>
+        <button class="btn-ghost" onclick="printResults()">Print</button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      ©2025 Flexi Tutors. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- Calculator Modal -->
+  <div id="calcModal" class="calc-modal hidden" role="dialog" aria-hidden="true">
+    <div class="calc-card">
+      <div class="calc-header">
+        <strong>Calculator</strong>
+        <button class="btn-ghost" onclick="toggleCalculator()">Close</button>
+      </div>
+      <input id="calcDisplay" class="calc-display" readonly />
+      <div class="calc-grid">
+        <button onclick="calcInsert('7')">7</button><button onclick="calcInsert('8')">8</button><button onclick="calcInsert('9')">9</button><button onclick="calcInsert('/')">÷</button>
+        <button onclick="calcInsert('4')">4</button><button onclick="calcInsert('5')">5</button><button onclick="calcInsert('6')">6</button><button onclick="calcInsert('*')">×</button>
+        <button onclick="calcInsert('1')">1</button><button onclick="calcInsert('2')">2</button><button onclick="calcInsert('3')">3</button><button onclick="calcInsert('-')">−</button>
+        <button onclick="calcInsert('0')">0</button><button onclick="calcInsert('.')">.</button><button onclick="calcClear()">C</button><button onclick="calcEval()">=</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ---------- Question bank (40) ---------- */
+const QUESTIONS_BANK = [
+  {
+    question: "Find the derivative of x².",
+    options: ["2x", "x", "x²", "2"],
+    answer: 0,
+    explanation: "The derivative of x² is 2x."
+  },
+  {
+    question: "Differentiate x³.",
+    options: ["3x²", "x²", "x³", "3x"],
+    answer: 0,
+    explanation: "The derivative of x³ is 3x²."
+  },
+  {
+    question: "Find d/dx of x⁵.",
+    options: ["5x⁴", "x⁴", "x⁵", "4x⁵"],
+    answer: 0,
+    explanation: "Power rule: d/dx of xⁿ = n·xⁿ⁻¹, so 5x⁴."
+  },
+  {
+    question: "Differentiate (x + 2)².",
+    options: ["2(x+2)", "2x+2", "2(x+2)²", "None"],
+    answer: 0,
+    explanation: "By chain rule, derivative is 2(x+2)."
+  },
+  {
+    question: "Find derivative of √x.",
+    options: ["1/(2√x)", "√x/2", "2√x", "1/√x"],
+    answer: 0,
+    explanation: "d/dx(√x) = 1/(2√x)."
+  },
+  {
+    question: "Find derivative of 1/x.",
+    options: ["-1/x²", "1/x²", "x", "0"],
+    answer: 0,
+    explanation: "d/dx(1/x) = -1/x²."
+  },
+  {
+    question: "Differentiate e^x.",
+    options: ["e^x", "x·e^x", "1", "ln(e)"],
+    answer: 0,
+    explanation: "The derivative of e^x is e^x."
+  },
+  {
+    question: "Find derivative of ln(x).",
+    options: ["1/x", "x", "ln(x)", "e^x"],
+    answer: 0,
+    explanation: "d/dx(ln(x)) = 1/x."
+  },
+  {
+    question: "Differentiate sin(x).",
+    options: ["cos(x)", "-cos(x)", "-sin(x)", "tan(x)"],
+    answer: 0,
+    explanation: "Derivative of sin(x) is cos(x)."
+  },
+  {
+    question: "Differentiate cos(x).",
+    options: ["-sin(x)", "sin(x)", "-cos(x)", "tan(x)"],
+    answer: 0,
+    explanation: "Derivative of cos(x) is -sin(x)."
+  },
+  {
+    question: "Differentiate tan(x).",
+    options: ["sec²(x)", "csc²(x)", "cot(x)", "cos²(x)"],
+    answer: 0,
+    explanation: "d/dx(tan(x)) = sec²(x)."
+  },
+  {
+    question: "Find derivative of x¹⁰.",
+    options: ["10x⁹", "9x¹⁰", "x⁹", "10x"],
+    answer: 0,
+    explanation: "By power rule, derivative is 10x⁹."
+  },
+  {
+    question: "Find derivative of 7x.",
+    options: ["7", "x", "7x", "0"],
+    answer: 0,
+    explanation: "d/dx(7x) = 7."
+  },
+  {
+    question: "Differentiate 5.",
+    options: ["0", "5", "1", "x"],
+    answer: 0,
+    explanation: "Derivative of a constant is 0."
+  },
+  {
+    question: "Differentiate x⁻².",
+    options: ["-2x⁻³", "2x⁻³", "-2x⁻²", "x⁻³"],
+    answer: 0,
+    explanation: "Power rule: n·xⁿ⁻¹ with n=-2 → -2x⁻³."
+  },
+  {
+    question: "Find derivative of 3x² + 2x.",
+    options: ["6x+2", "6x+1", "3x+2", "6x²"],
+    answer: 0,
+    explanation: "Differentiate term by term: 3x²→6x, 2x→2. So 6x+2."
+  },
+  {
+    question: "Differentiate (2x+1)³.",
+    options: ["6(2x+1)²", "3(2x+1)²", "6x(2x+1)", "None"],
+    answer: 0,
+    explanation: "Chain rule: derivative is 3(2x+1)²·2 = 6(2x+1)²."
+  },
+  {
+    question: "Differentiate log₁₀(x).",
+    options: ["1/(x ln(10))", "1/x", "ln(x)", "10/x"],
+    answer: 0,
+    explanation: "d/dx(log₁₀(x)) = 1/(x ln(10))."
+  },
+  {
+    question: "Find d/dx of sin(2x).",
+    options: ["2cos(2x)", "cos(2x)", "2sin(2x)", "sin(2x)"],
+    answer: 0,
+    explanation: "Chain rule: derivative is cos(2x)·2 = 2cos(2x)."
+  },
+  {
+    question: "Differentiate cos(3x).",
+    options: ["-3sin(3x)", "-sin(3x)", "3cos(3x)", "cos(3x)"],
+    answer: 0,
+    explanation: "Derivative of cos(3x) = -sin(3x)·3 = -3sin(3x)."
+  },
+  {
+    question: "Differentiate tan(5x).",
+    options: ["5sec²(5x)", "sec²(5x)", "5tan(5x)", "csc²(5x)"],
+    answer: 0,
+    explanation: "Chain rule: derivative of tan(5x) is sec²(5x)·5 = 5sec²(5x)."
+  },
+  {
+    question: "Find derivative of e²ˣ.",
+    options: ["2e²ˣ", "e²ˣ", "2x·eˣ", "None"],
+    answer: 0,
+    explanation: "Chain rule: derivative of e²ˣ is e²ˣ·2 = 2e²ˣ."
+  },
+  {
+    question: "Find derivative of ln(5x).",
+    options: ["1/x", "1/(5x)", "1/(5x)·5", "5/x"],
+    answer: 3,
+    explanation: "Chain rule: d/dx(ln(5x)) = 1/(5x)·5 = 5/x."
+  },
+  {
+    question: "Differentiate x^(1/2).",
+    options: ["1/(2√x)", "2√x", "√x/2", "x"],
+    answer: 0,
+    explanation: "d/dx(x^(1/2)) = (1/2)x^(−1/2) = 1/(2√x)."
+  },
+  {
+    question: "Find derivative of x^(1/3).",
+    options: ["1/(3x^(2/3))", "3x²", "x^(−2/3)", "1/x"],
+    answer: 0,
+    explanation: "d/dx(x^(1/3)) = (1/3)x^(−2/3)."
+  },
+  {
+    question: "Differentiate arcsin(x).",
+    options: ["1/√(1−x²)", "1/(1+x²)", "−1/√(1−x²)", "cos(x)"],
+    answer: 0,
+    explanation: "d/dx(arcsin(x)) = 1/√(1−x²)."
+  },
+  {
+    question: "Differentiate arccos(x).",
+    options: ["−1/√(1−x²)", "1/√(1−x²)", "1/(1+x²)", "sin(x)"],
+    answer: 0,
+    explanation: "d/dx(arccos(x)) = −1/√(1−x²)."
+  },
+  {
+    question: "Differentiate arctan(x).",
+    options: ["1/(1+x²)", "1/(1−x²)", "−1/(1+x²)", "cos²(x)"],
+    answer: 0,
+    explanation: "d/dx(arctan(x)) = 1/(1+x²)."
+  },
+  {
+    question: "Differentiate sinh(x).",
+    options: ["cosh(x)", "sinh(x)", "−cosh(x)", "e^x"],
+    answer: 0,
+    explanation: "d/dx(sinh(x)) = cosh(x)."
+  },
+  {
+    question: "Differentiate cosh(x).",
+    options: ["sinh(x)", "cosh(x)", "−sinh(x)", "e^x"],
+    answer: 0,
+    explanation: "d/dx(cosh(x)) = sinh(x)."
+  },
+  {
+    question: "Differentiate tanh(x).",
+    options: ["sech²(x)", "csch²(x)", "sec²(x)", "cosh²(x)"],
+    answer: 0,
+    explanation: "d/dx(tanh(x)) = sech²(x)."
+  },
+  {
+    question: "Find derivative of ln(x²).",
+    options: ["2/x", "1/x", "ln(x)", "x²"],
+    answer: 0,
+    explanation: "d/dx(ln(x²)) = (1/(x²))·2x = 2/x."
+  },
+];
+
+/* ---------- App State ---------- */
+let candidateName = '';
+let selectedQuestions = [];
+let answers = []; // null or 0..3
+let currentIndex = 0;
+let timeLeft = 10 * 60;
+let timerInterval = null;
+
+/* corrections state */
+let correctionIndex = 0;
+
+/* ---------- Page Refs ---------- */
+const pageName = document.getElementById('page-name');
+const pageInstructions = document.getElementById('page-instructions');
+const pageExam = document.getElementById('page-exam');
+const pageScore = document.getElementById('page-score');
+const pageCorrections = document.getElementById('page-corrections');
+
+const candidateNameInput = document.getElementById('candidateName');
+const candidateBadge = document.getElementById('candidateBadge');
+const globalTimer = document.getElementById('globalTimer');
+const questionCard = document.getElementById('questionCard');
+const progressText = document.getElementById('progressText');
+const qaNav = document.getElementById('qaNav');
+const scoreGreeting = document.getElementById('scoreGreeting');
+const scoreBig = document.getElementById('scoreBig');
+const scoreDetails = document.getElementById('scoreDetails');
+const correctionsNav = document.getElementById('correctionsNav');
+const correctionDisplay = document.getElementById('correctionDisplay');
+
+/* ---------- Navigation helpers ---------- */
+function toInstructions(){
+  const name = candidateNameInput.value.trim();
+  if(!name){ alert('Please enter your name'); return; }
+  candidateName = name;
+  showOnly('instructions');
+}
+function backToName(){ showOnly('name'); }
+function showOnly(page){
+  [pageName,pageInstructions,pageExam,pageScore,pageCorrections].forEach(p=>p.classList.add('hidden'));
+  if(page === 'name') pageName.classList.remove('hidden');
+  if(page === 'instructions') pageInstructions.classList.remove('hidden');
+  if(page === 'exam') pageExam.classList.remove('hidden');
+  if(page === 'score') pageScore.classList.remove('hidden');
+  if(page === 'corrections') pageCorrections.classList.remove('hidden');
+}
+
+/* ---------- Exam Flow ---------- */
+function startExam(){
+  // pick 10 random unique questions
+  selectedQuestions = shuffleArray(QUESTIONS_BANK).slice(0,10);
+  answers = Array(selectedQuestions.length).fill(null);
+  currentIndex = 0;
+  timeLeft = 10 * 60;
+  candidateBadge.textContent = candidateName;
+  renderQANav();
+  renderQuestion();
+  showOnly('exam');
+  startTimer();
+}
+function shuffleArray(a){
+  const arr = a.slice();
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function renderQANav(){
+  qaNav.innerHTML='';
+  selectedQuestions.forEach((q,i)=>{
+    const b=document.createElement('button');
+    b.textContent=i+1;
+    b.className = '';
+    if(answers[i]!==null) b.classList.add('answered');
+    if(i===currentIndex) b.classList.add('active');
+    b.onclick=()=>{ currentIndex=i; renderQuestion(); renderQANav(); };
+    qaNav.appendChild(b);
+  });
+}
+function renderQuestion(){
+  const q=selectedQuestions[currentIndex];
+  progressText.textContent=(currentIndex+1)+" / "+selectedQuestions.length;
+  // build options with radio inputs
+  const opts = q.options.map((opt,idx)=> {
+    const checked = answers[currentIndex]===idx ? 'checked' : '';
+    return `<label class="option">
+      <input type="radio" name="q${currentIndex}" value="${idx}" ${checked}
+        onchange="answers[${currentIndex}]=${idx}; renderQANav();">
+      ${opt}
+    </label>`;
+  }).join('');
+  questionCard.innerHTML = `<div class="question-text">${q.question}</div><div class="options">${opts}</div>`;
+}
+function prevQuestion(){ if(currentIndex>0){ currentIndex--; renderQuestion(); renderQANav(); } }
+function nextQuestion(){ if(currentIndex<selectedQuestions.length-1){ currentIndex++; renderQuestion(); renderQANav(); } }
+
+/* ---------- Timer ---------- */
+function startTimer(){
+  clearInterval(timerInterval);
+  globalTimer.textContent = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
+  timerInterval=setInterval(()=>{
+    timeLeft--;
+    const min=Math.floor(timeLeft/60);
+    const sec=timeLeft%60;
+    globalTimer.textContent=`${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+    if(timeLeft<=0){
+      clearInterval(timerInterval);
+      submitExam();
+    }
+  },1000);
+}
+
+/* ---------- Submit & Scoring ---------- */
+function submitExam(){
+  clearInterval(timerInterval);
+  let correct=0;
+  selectedQuestions.forEach((q,i)=>{
+    if(answers[i]===q.answer) correct++;
+  });
+  const percent=correct*10;
+  scoreGreeting.textContent=`Well done, ${candidateName}!`;
+  scoreBig.textContent=`${percent}%`;
+  scoreDetails.textContent=`You got ${correct} out of ${selectedQuestions.length} correct.`;
+  showOnly('score');
+}
+
+/* ---------- Corrections UI (single-question view with number buttons) ---------- */
+function openCorrections(){
+  // prepare corrections nav and default to first correction
+  correctionIndex = 0;
+  renderCorrectionsNav();
+  renderCorrection(correctionIndex);
+  showOnly('corrections');
+}
+function renderCorrectionsNav(){
+  correctionsNav.innerHTML = '';
+  selectedQuestions.forEach((q,i)=>{
+    const b = document.createElement('button');
+    b.textContent = i+1;
+    b.className = '';
+    if(answers[i] !== null) b.classList.add('answered');
+    if(i===correctionIndex) b.classList.add('active');
+    b.onclick = ()=>{ correctionIndex = i; renderCorrection(correctionIndex); renderCorrectionsNav(); };
+    correctionsNav.appendChild(b);
+  });
+}
+function renderCorrection(i){
+  const q = selectedQuestions[i];
+  const userAnsIdx = answers[i];
+  const correctIdx = q.answer;
+
+  // create option buttons similar to exam UI (but disabled)
+  const optsHtml = q.options.map((opt, idx)=>{
+    let marker = '';
+    let cls = '';
+    if(idx === correctIdx) { marker = ' (Correct)'; cls = 'correct'; }
+    if(idx === userAnsIdx && idx !== correctIdx) { marker = ' (Your answer)'; cls = 'wrong'; }
+    const checked = userAnsIdx === idx ? '✓' : '';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-radius:6px;border:1px solid #eee;margin-bottom:6px;background:#fbfdff">
+      <div><strong>${idx+1}.</strong> ${escapeHtml(opt)} ${marker ? `<span style="margin-left:8px;color:var(--muted);font-weight:600">${marker}</span>` : ''}</div>
+      <div style="font-weight:700">${checked}</div>
+    </div>`;
+  }).join('');
+
+  // Build explanation block
+  const explanationHtml = `<div class="correction-explanation"><strong>Explanation:</strong> ${escapeHtml(q.explanation)}</div>`;
+
+  // Status line
+  let statusHtml = '';
+  if(userAnsIdx === null){
+    statusHtml = `<div style="margin-top:8px;color:#374151">You did not answer this question.</div>`;
+  } else if(userAnsIdx === correctIdx){
+    statusHtml = `<div style="margin-top:8px" class="correct">You answered correctly.</div>`;
+  } else {
+    statusHtml = `<div style="margin-top:8px" class="wrong">You answered incorrectly. Correct answer: <strong>${escapeHtml(q.options[correctIdx])}</strong></div>`;
+  }
+
+  // assemble
+  correctionDisplay.innerHTML = `
+    <div class="correction-meta">Q${i+1} of ${selectedQuestions.length} &nbsp;|&nbsp; Candidate: ${escapeHtml(candidateName)}</div>
+    <div style="margin-bottom:12px"><strong>${escapeHtml(q.question)}</strong></div>
+    <div>${optsHtml}</div>
+    ${statusHtml}
+    ${explanationHtml}
+  `;
+}
+function prevCorrection(){ if(correctionIndex>0){ correctionIndex--; renderCorrection(correctionIndex); renderCorrectionsNav(); } }
+function nextCorrection(){ if(correctionIndex<selectedQuestions.length-1){ correctionIndex++; renderCorrection(correctionIndex); renderCorrectionsNav(); } }
+
+/* ---------- PDF Summary (table only) ---------- */
+function downloadResultsPDF(){
+  // compute stats
+  let correct = 0;
+  selectedQuestions.forEach((q,i)=>{ if(answers[i]===q.answer) correct++; });
+  const total = selectedQuestions.length;
+  const wrong = total - correct;
+  const score = correct * 10;
+  const percent = score;
+  const rating = performanceRating(percent);
+
+  // build summary HTML
+  const tableHtml = `
+    <div style="font-family: Arial, Helvetica, sans-serif; padding:18px; color:#111;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:20px;font-weight:800;color:#0b5fff">Flexi Tutors — Differential Calculus CBT</div>
+        <div style="font-size:12px;color:#444">Candidate: ${escapeHtml(candidateName)}<br/>Date: ${new Date().toLocaleString()}</div>
+      </div>
+      <div style="margin-top:6px;">
+        <table class="summary-table" style="width:60%;margin:auto;border-collapse:collapse;">
+          <thead>
+            <tr><th>Correct</th><th>Wrong</th><th>Score</th><th>Percentage</th><th>Rating</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${correct}</td>
+              <td>${wrong}</td>
+              <td>${score}</td>
+              <td>${percent}%</td>
+              <td>${rating}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="text-align:center;margin-top:14px;">
+        <small style="color:#6b7280">Generated by Flexi Tutors</small>
+      </div>
+    </div>
+  `;
+
+  const opt = {
+    margin:       10,
+    filename:     `${candidateName.replace(/\s+/g,'_')}_flexi_tutors_summary.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  // create a temporary container to pass to html2pdf
+  const temp = document.createElement('div');
+  temp.innerHTML = tableHtml;
+  document.body.appendChild(temp);
+  html2pdf().set(opt).from(temp).save().then(()=>{ temp.remove(); });
+}
+
+/* ---------- Print Results (summary or full corrections if open) ---------- */
+function printResults(){
+  let content = '';
+  if(!pageCorrections.classList.contains('hidden')){
+    // print the current correction display only (single question)
+    content = `<h2>Flexi Tutors — Correction (Single)</h2><div>Candidate: ${escapeHtml(candidateName)}</div><hr/>${correctionDisplay.innerHTML}`;
+  } else {
+    // print summary table
+    let correct = 0;
+    selectedQuestions.forEach((q,i)=>{ if(answers[i]===q.answer) correct++; });
+    const total = selectedQuestions.length;
+    const wrong = total - correct;
+    const score = correct * 10;
+    const percent = score;
+    const rating = performanceRating(percent);
+
+    content = `<h2>Flexi Tutors — Result Summary</h2>
+      <div>Candidate: ${escapeHtml(candidateName)}</div><hr/>
+      <table style="border-collapse:collapse;width:60%;margin-top:12px;">
+        <thead>
+          <tr><th style="border:1px solid #ddd;padding:8px">Correct</th><th style="border:1px solid #ddd;padding:8px">Wrong</th><th style="border:1px solid #ddd;padding:8px">Score</th><th style="border:1px solid #ddd;padding:8px">Percentage</th><th style="border:1px solid #ddd;padding:8px">Rating</th></tr>
+        </thead>
+        <tbody>
+          <tr><td style="border:1px solid #ddd;padding:8px">${correct}</td><td style="border:1px solid #ddd;padding:8px">${wrong}</td><td style="border:1px solid #ddd;padding:8px">${score}</td><td style="border:1px solid #ddd;padding:8px">${percent}%</td><td style="border:1px solid #ddd;padding:8px">${rating}</td></tr>
+        </tbody>
+      </table>`;
+  }
+
+  const w = window.open('', '_blank', 'width=900,height=700');
+  w.document.open();
+  w.document.write(`<html><head><title>Print</title></head><body style="font-family:Arial,Helvetica,sans-serif;padding:18px">${content}</body></html>`);
+  w.document.close();
+  setTimeout(()=>{ w.print(); w.close(); }, 500);
+}
+
+/* ---------- Retake ---------- */
+function retakeExam(){
+  clearInterval(timerInterval);
+  selectedQuestions = [];
+  answers = [];
+  currentIndex = 0;
+  timeLeft = 10 * 60;
+  candidateBadge.textContent = candidateName;
+  showOnly('instructions');
+}
+
+/* ---------- Calculator ---------- */
+function toggleCalculator(){
+  const modal = document.getElementById('calcModal');
+  const isHidden = modal.classList.contains('hidden');
+  if(isHidden){
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    document.getElementById('calcDisplay').value = '';
+  } else {
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+}
+function calcInsert(s){
+  const d = document.getElementById('calcDisplay');
+  d.value = (d.value || '') + s;
+}
+function calcClear(){
+  document.getElementById('calcDisplay').value = '';
+}
+function calcEval(){
+  const d = document.getElementById('calcDisplay');
+  const expr = d.value || '';
+  if(!expr) return;
+  try{
+    if(/[a-zA-Z]/.test(expr)){ throw new Error('Invalid characters'); }
+    const fn = new Function('return (' + expr + ')');
+    const res = fn();
+    if(typeof res === 'number' && isFinite(res)){
+      d.value = String(res);
+    } else {
+      d.value = 'Error';
+    }
+  } catch(e){
+    d.value = 'Error';
+  }
+}
+
+/* ---------- Utilities ---------- */
+function escapeHtml(unsafe) {
+  if(unsafe === null || unsafe === undefined) return '';
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+function performanceRating(percent){
+  if(percent >= 80) return 'Excellent';
+  if(percent >= 60) return 'Good';
+  if(percent >= 40) return 'Fair';
+  return 'Poor';
+}
+
+/* ---------- Initialize ---------- */
+showOnly('name');
+</script>
+</body>
+</html>

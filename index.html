@@ -1,196 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flexi CBT – Candidate Login</title>
-<style>
-body {
-  margin:0;
-  font-family: Arial, Helvetica, sans-serif;
-  background:#f4f6f4;
-}
-.header {
-  background:#0b6623;
-  color:white;
-  padding:15px 20px;
-  font-size:20px;
-  font-weight:bold;
-  text-align:center;
-}
-
-/* Centered container for login or messages */
-.center-box {
-  max-width: 400px;
-  margin: 80px auto;
-  background: white;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  text-align: center;
-}
-
-input[type="text"] {
-  width: 90%;
-  padding: 12px;
-  margin: 15px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size:16px;
-}
-
-button {
-  width: 95%;
-  padding: 12px;
-  border:none;
-  border-radius: 8px;
-  background: #0b6623;
-  color:white;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-button:hover {
-  background:#084d1a;
-}
-
-.message-box {
-  display:none;
-  padding: 20px;
-  margin-top: 20px;
-  background:#ffe6e6;
-  color:#b30000;
-  font-weight:bold;
-  border-radius: 10px;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auth Page</title>
+  <style>
+    /* ✅ Your CSS left unchanged */
+    header {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      color: white;
+    }
+    header h1 {
+      margin: 10px 0 0;
+      font-size: 1.8em;
+      font-weight: bold;
+      color: white;
+    }
+    header img {
+      display: block;
+      margin: 0 auto;
+      border-radius: 50%;
+      background: white;
+      padding: 2px;
+      height: 120px;
+      width: 120px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(-45deg, #16a34a, #4ade80, #fef08a, #facc15,#38bdf8,#60a5fa,#3b82f6);
+      background-size: 400% 400%;
+      animation: gradientMove 12s ease infinite;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .card {
+      background: rgba(0,0,0,0.7);
+      padding: 35px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      color: white;
+      width: 320px;
+      text-align: center;
+      display: none;
+    }
+    .card.active { display: block; }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      margin-top: 12px;
+      padding: 10px;
+      width: 100%;
+      background: #facc15;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover { background: #f59e0b; }
+    a {
+      color: #93c5fd;
+      cursor: pointer;
+      font-size: 0.9em;
+      display: block;
+      margin-top: 10px;
+    }
+    #message-box {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 350px;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      text-align: center;
+      animation: slideDown 0.3s ease;
+      z-index: 999;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+      display: none;
+    }
+    #message-box.error { background-color: #ff4d4d; color: white; }
+    #message-box.success { background-color: #4CAF50; color: white; }
+    .fade-out { opacity: 0; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .eye-btn {
+      position: absolute;
+      right: 8px;
+      top: 10px;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      color: #ccc;
+    }
+  </style>
 </head>
 <body>
+  
+<header>
+  <img src="https://i.imgur.com/uXUwmkC.png" alt="Logo"
+    style="height: 130px; width: 130px; border-radius: 50%; background: white; padding: 2px;">
+  <h1>Flexi Tutors</h1>
+</header>
+ 
+<div id="message-box"></div>
 
-<div class="header">Flexi CBT Login</div>
-
-<div class="center-box" id="loginBox">
-  <h2>Enter Your Name</h2>
-  <input type="text" id="candidateNameInput" placeholder="Your full name">
-  <button id="startExamBtn">Start Exam</button>
-
-  <div class="message-box" id="messageBox">Exam Not Found</div>
+<!-- LOGIN -->
+<div class="card active" id="login-card">
+  <h2>Login</h2>
+  <input type="email" id="login-email" placeholder="Email" required />
+  <div style="position: relative;">
+    <input type="password" id="login-password" placeholder="Password" required />
+    <svg class="eye-btn" data-target="login-password" xmlns="http://www.w3.org/2000/svg" fill="none"
+      viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 
+        2.943 9.542 7-1.274 4.057-5.065 
+        7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  </div>
+  <button id="loginBtn">Login</button>
+  <a onclick="showCard('signup-card')">Create Account</a>
+  <a onclick="showCard('reset-card')">Forgot Password?</a>
 </div>
 
+<!-- SIGNUP -->
+<div class="card" id="signup-card">
+  <h2>Sign Up</h2>
+  <input type="text" id="signup-Firstname" placeholder="First Name" required />
+  <input type="text" id="signup-Lastname" placeholder="Last Name" required />
+  <input type="email" id="signup-email" placeholder="Email" required />
+  <div style="position: relative;">
+    <input type="password" id="signup-password" placeholder="Password" required />
+    <svg class="eye-btn" data-target="signup-password" xmlns="http://www.w3.org/2000/svg" fill="none"
+      viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 
+        2.943 9.542 7-1.274 4.057-5.065 
+        7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  </div>
+  <button id="signupBtn">Sign Up</button>
+  <a onclick="showCard('login-card')">Already have an account? Login</a>
+</div>
+
+<!-- RESET PASSWORD -->
+<div class="card" id="reset-card">
+  <h2>Reset Password</h2>
+  <input type="email" id="reset-email" placeholder="Enter your email" required />
+  <button id="resetBtn">Send Reset Email</button>
+  <a onclick="showCard('login-card')">Back to Login</a>
+</div>
+
+<!-- Page switching script -->
+<script>
+  function showCard(cardId) {
+    document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+    document.getElementById(cardId).classList.add('active');
+  }
+</script>
+
+<!-- Firebase script -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile } 
+    from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
-// ====== Firebase Config ======
-const firebaseConfig = {
-  apiKey: "AIzaSyCPumFid5YNTWug52q2VDtSDQTLU9REgss",
-  authDomain: "flexi-tutors.firebaseapp.com",
-  projectId: "flexi-tutors",
-  storageBucket: "flexi-tutors.firebasestorage.app",
-  messagingSenderId: "320176672406",
-  appId: "1:320176672406:web:90f19511241e51c6437cb7",
-  measurementId: "G-Z9P1G4K0SY"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaVTwzI_0h0RVdh_ASDDqdsvrg_3oHPSs",
+    authDomain: "flexi-702a9.firebaseapp.com",
+    projectId: "flexi-702a9",
+    storageBucket: "flexi-702a.appspot.com",
+    messagingSenderId: "647814322831",
+    appId: "1:647814322831:web:74fc00cfc62abdc7e76efa",
+    measurementId: "G-7BC49SZJ6V"
+  };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-// ====== DOM Elements ======
-const messageBox = document.getElementById("messageBox");
-const startBtn = document.getElementById("startExamBtn");
-const nameInput = document.getElementById("candidateNameInput");
-
-// ====== Normalize name ======
-function normalizeName(name) {
-  return name.trim().toLowerCase();
-}
-
-function formatNameForStorage(name) {
-  return name
-    .trim()
-    .toLowerCase()
-    .split(" ")
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-// ====== Exam Times ======
-const examStart = new Date("2026-01-17T12:00:00"); // 12 PM
-const examEnd = new Date("2026-01-18T23:59:59");   // 11:59 PM
-
-// ====== Update Countdown ======
-function updateExamTime() {
-  const now = new Date();
-
-  if (now < examStart) {
-    const diff = examStart - now;
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-    messageBox.innerHTML = `
-      ⏳ Exam  starts <strong>${hours.toString().padStart(2,'0')}h :
-      ${minutes.toString().padStart(2,'0')}m :
-      ${seconds.toString().padStart(2,'0')}s</strong>
-    `;
-    messageBox.style.display = "block";
-    startBtn.disabled = true;
-    return false;
-  } else if (now > examEnd) {
-    messageBox.innerHTML = "⛔ The exam has closed. You can no longer take the test.";
-    messageBox.style.display = "block";
-    startBtn.disabled = true;
-    return false;
-  } else {
-    messageBox.style.display = "none";
-    startBtn.disabled = false;
-    return true;
-  }
-}
-
-// ====== Live Countdown Timer ======
-setInterval(updateExamTime, 1000);
-updateExamTime(); // initial call
-
-// ====== Check if candidate already took exam ======
-async function checkCandidateName(name) {
-  const normalizedInput = normalizeName(name);
-  const querySnapshot = await getDocs(collection(db, "cbtResults"));
-
-  for (let doc of querySnapshot.docs) {
-    const dbName = normalizeName(doc.data().name || "");
-    if (dbName === normalizedInput) return true;
-  }
-  return false;
-}
-
-// ====== Start Exam ======
-startBtn.addEventListener("click", async () => {
-  const candidateName = nameInput.value.trim();
-  if (!candidateName) {
-    messageBox.innerText = "⚠️ Please enter your full name.";
-    messageBox.style.display = "block";
-    return;
+  function showMessage(message, type) {
+    const msgBox = document.getElementById("message-box");
+    msgBox.textContent = message;
+    msgBox.className = type === "error" ? "error" : "success";
+    msgBox.style.display = "block";
+    msgBox.classList.remove("fade-out");
+    setTimeout(() => msgBox.classList.add("fade-out"), 3000);
+    setTimeout(() => (msgBox.style.display = "none"), 3500);
   }
 
-  // Time check
-  if (!updateExamTime()) return;
-
-  // Duplicate check
-  const alreadyTaken = await checkCandidateName(candidateName);
-  if (alreadyTaken) {
-    messageBox.innerText = "⚠️ You have already taken the exam. Only one attempt is allowed.";
-    messageBox.style.display = "block";
-    return;
+  function friendlyError(error) {
+    if (error.code === "auth/network-request-failed") return "No network connection. Please try again later.";
+    if (error.code === "auth/user-not-found") return "No account found with that email.";
+    if (error.code === "auth/wrong-password") return "Incorrect password.";
+    if (error.code === "auth/email-already-in-use") return "This email is already registered.";
+    if (error.code === "auth/invalid-email") return "Invalid email format.";
+    if (error.code === "auth/weak-password") return "Password should be at least 6 characters.";
+    if (error.code === "auth/invalid-credential") return "Invalid Credentials.";
+    return error.message;
   }
 
-  // Save formatted name and continue
-  const formattedName = formatNameForStorage(candidateName);
-  localStorage.setItem("candidateName", formattedName);
-  window.location.href = "page2.html";
-});
+  // Login
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const email = document.getElementById("login-email").value;
+    const password = document.getElementById("login-password").value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      showMessage("Login successful!", "success");
+      setTimeout(() => { window.location.href = "home.html"; }, 1500);
+    } catch (error) {
+      showMessage(friendlyError(error), "error");
+    }
+  });
+
+  // Signup with validation
+  document.getElementById("signupBtn").addEventListener("click", async (event) => {
+    const firstName = document.getElementById("signup-Firstname").value;
+    const lastName = document.getElementById("signup-Lastname").value;
+    const email = document.getElementById("signup-email").value;
+    const password = document.getElementById("signup-password").value;
+
+    const errorMsg = validatePassword(password);
+    if (errorMsg) {
+      event.preventDefault();
+      showMessage(errorMsg, "error");
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: `${firstName} ${lastName}` });
+      showMessage("Account created successfully!", "success");
+      setTimeout(() => { window.location.href = "home.html"; }, 1500);
+    } catch (error) {
+      showMessage(friendlyError(error), "error");
+    }
+  });
+
+  // Reset password
+  document.getElementById("resetBtn").addEventListener("click", async () => {
+    const email = document.getElementById("reset-email").value;
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showMessage("Password reset email sent!", "success");
+      setTimeout(() => { showCard("login-card"); }, 2000);
+    } catch (error) {
+      showMessage(friendlyError(error), "error");
+    }
+  });
+
+  // ✅ Password validation
+  function validatePassword(password) {
+    const minLength = 8;
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+
+    if (password.length < minLength) return "Password must be at least 8 characters.";
+    if (!hasUpper) return "Password must contain at least one uppercase letter.";
+    if (!hasLower) return "Password must contain at least one lowercase letter.";
+    if (!hasNumber) return "Password must contain at least one number.";
+    return null;
+  }
+
+  // ✅ Toggle password visibility with SVG
+  document.querySelectorAll(".eye-btn").forEach(icon => {
+    icon.addEventListener("click", function () {
+      const input = document.getElementById(this.dataset.target);
+      if (input.type === "password") {
+        input.type = "text";
+        this.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 
+            0-8.269-2.943-9.543-7a10.05 10.05 0 011.383-2.813m2.83-2.829A9.953 
+            9.953 0 0112 5c4.478 0 8.269 2.943 9.543 
+            7a9.96 9.96 0 01-4.132 5.411m-2.83-2.829A3 
+            3 0 1112 9c.83 0 1.58.336 
+            2.121.879M15 12a3 3 0 01-3 3" />`;
+      } else {
+        input.type = "password";
+        this.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M2.458 12C3.732 7.943 7.523 5 12 
+            5c4.477 0 8.268 2.943 9.542 
+            7-1.274 4.057-5.065 
+            7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+      }
+    });
+  });
+  // ✅ Password strength indicator
+  function setupStrengthChecker(inputId) {
+    const input = document.getElementById(inputId);
+    const strengthText = document.createElement("small");
+    strengthText.style.display = "block";
+    strengthText.style.marginTop = "5px";
+    strengthText.style.fontWeight = "bold";
+    input.parentNode.appendChild(strengthText);
+
+    input.addEventListener("input", () => {
+      const val = input.value;
+      let strength = "Weak";
+      let color = "red";
+
+      if (val.length >= 8 && /[A-Z]/.test(val) && /\d/.test(val) && /[^A-Za-z0-9]/.test(val)) {
+        strength = "Strong";
+        color = "green";
+      } else if (val.length >= 6 && (/[A-Z]/.test(val) || /\d/.test(val))) {
+        strength = "Medium";
+        color = "orange";
+      }
+
+      if (val.length === 0) {
+        strengthText.textContent = "";
+      } else {
+        strengthText.textContent = `Password Strength: ${strength}`;
+        strengthText.style.color = color;
+      }
+    });
+  }
+
+  // Apply checker to signup password only (not login)
+  setupStrengthChecker("signup-password");
 </script>
 </body>
 </html>

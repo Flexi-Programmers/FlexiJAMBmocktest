@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auth Page</title>
+  <style>
+  header {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: white;
+}
+
+header h1 {
+  margin: 10px 0 0;
+  font-size: 1.8em;
+  font-weight: bold;
+  color: white;
+}
+
+header img {
+  display: block;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: white;
+  padding: 2px;
+  height: 120px;
+  width: 120px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(-45deg, #16a34a, #4ade80, #fef08a, #facc15,#38bdf8,#60a5fa,#3b82f6);
+      background-size: 400% 400%;
+      animation: gradientMove 12s ease infinite;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .card {
+      background: rgba(0,0,0,0.7);
+      padding: 35px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      color: white;
+      width: 320px;
+      text-align: center;
+      display: none;
+    }
+    .card.active { display: block; }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      margin-top: 12px;
+      padding: 10px;
+      width: 100%;
+      background: #facc15;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover { background: #f59e0b; }
+    a {
+      color: #93c5fd;
+      cursor: pointer;
+      font-size: 0.9em;
+      display: block;
+      margin-top: 10px;
+    }
+
+    /* Message Box */
+    #message-box {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 350px;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      text-align: center;
+      animation: slideDown 0.3s ease;
+      z-index: 999;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+      display: none;
+    }
+    #message-box.error {
+      background-color: #ff4d4d;
+      color: white;
+    }
+    #message-box.success {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .fade-out {
+      opacity: 0;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  
+<header>
+ <img src="https://i.imgur.com/uXUwmkC.png" alt="Logo"
+    style="height: 130px; width: 130px; border-radius: 50%; background: white; padding: 2px; vertical-align: middle; margin-right: 8px;">
+  <h1>Flexi Tutors</h1>
+ </header>
+ 
+  <div id="message-box"></div>
+
+  <!-- LOGIN -->
+  <div class="card active" id="login-card">
+    <h2>Login</h2>
+    <input type="email" id="login-email" placeholder="Email" required />
+    <input type="password" id="login-password" placeholder="Password" required />
+    <button id="loginBtn">Login</button>
+    <a onclick="showCard('signup-card')">Create Account</a>
+    <a onclick="showCard('reset-card')">Forgot Password?</a>
+  </div>
+
+  <!-- SIGNUP -->
+  <div class="card" id="signup-card">
+    <h2>Sign Up</h2>
+    <input type="text" id="signup-Firstname" placeholder="First Name" required />
+    <input type="text" id="signup-Lastname" placeholder="Last Name" required />
+    <input type="email" id="signup-email" placeholder="Email" required />
+    <input type="password" id="signup-password" placeholder="Password" required />
+    <button id="signupBtn">Sign Up</button>
+    <a onclick="showCard('login-card')">Already have an account? Login</a>
+  </div>
+
+  <!-- RESET PASSWORD -->
+  <div class="card" id="reset-card">
+    <h2>Reset Password</h2>
+    <input type="email" id="reset-email" placeholder="Enter your email" required />
+    <button id="resetBtn">Send Reset Email</button>
+    <a onclick="showCard('login-card')">Back to Login</a>
+  </div>
+
+  <!-- Page switching script -->
+  <script>
+    function showCard(cardId) {
+      document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+      document.getElementById(cardId).classList.add('active');
+    }
+  </script>
+
+  <!-- Firebase script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCaVTwzI_0h0RVdh_ASDDqdsvrg_3oHPSs",
+      authDomain: "flexi-702a9.firebaseapp.com",
+      projectId: "flexi-702a9",
+      storageBucket: "flexi-702a.appspot.com",
+      messagingSenderId: "647814322831",
+      appId: "1:647814322831:web:74fc00cfc62abdc7e76efa",
+      measurementId: "G-7BC49SZJ6V"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    function showMessage(message, type) {
+      const msgBox = document.getElementById("message-box");
+      msgBox.textContent = message;
+      msgBox.className = type === "error" ? "error" : "success";
+      msgBox.style.display = "block";
+      msgBox.classList.remove("fade-out");
+
+      setTimeout(() => {
+        msgBox.classList.add("fade-out");
+      }, 3000); 
+
+      setTimeout(() => {
+        msgBox.style.display = "none";
+      }, 3500);
+    }
+
+    function friendlyError(error) {
+      if (error.code === "auth/network-request-failed") return "No network connection. Please try again later.";
+      if (error.code === "auth/user-not-found") return "No account found with that email.";
+      if (error.code === "auth/wrong-password") return "Incorrect password.";
+      if (error.code === "auth/email-already-in-use") return "This email is already registered.";
+      if (error.code === "auth/invalid-email") return "Invalid email format.";
+      if (error.code === "auth/weak-password") return "Password should be at least 6 characters.";
+      if (error.code === "auth/invalid-credential") return "Invalid Credentials.";
+      return error.message;
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        showMessage("Login successful!", "success");
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1500);
+      } catch (error) {
+        showMessage(friendlyError(error), "error");
+      }
+    });
+
+    document.getElementById("signupBtn").addEventListener("click", async () => {
+      const email = document.getElementById("signup-email").value;
+      const password = document.getElementById("signup-password").value;
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        showMessage("Account created successfully!", "success");
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1500);
+      } catch (error) {
+        showMessage(friendlyError(error), "error");
+      }
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", async () => {
+      const email = document.getElementById("reset-email").value;
+      try {
+        await sendPasswordResetEmail(auth, email);
+        showMessage("Password reset email sent!", "success");
+        setTimeout(() => {
+          showCard('login-card');
+        }, 2000);
+      } catch (error) {
+        showMessage(friendlyError(error), "error");
+      }
+    });
+  </script>
+</body>
+</html>
