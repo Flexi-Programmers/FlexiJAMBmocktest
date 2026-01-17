@@ -277,6 +277,14 @@ body{
 .option-circle:hover {
   background-color: #e0e0e0;
 }
+
+.qnum.current {
+  border: 2px solid #0b6623;
+  background: #e6f4ea;
+  color: #0b6623;
+  font-weight: bold;
+  transform: scale(1.05);
+}
 </style>
 </head>
 
@@ -392,7 +400,7 @@ Literature_in_English: [ {"question": "The main purpose of drama is to", "option
 <script type="module">
 /* ================= FIREBASE ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, doc, setDoc, serverTimestamp } 
+import { getFirestore, doc, setDoc, serverTimestamp }
 from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -421,31 +429,33 @@ selectedSubjects = selectedSubjects.map(s => s.trim());
 
 let filteredExamData = {};
 selectedSubjects.forEach(sub => {
-  if (!examData[sub]) console.error("Missing subject in examData:", sub);
+  if (!examData[sub]) console.error("Missing subject:", sub);
   else filteredExamData[sub] = examData[sub];
 });
 
-let subjects = Object.keys(filteredExamData);
+const subjects = Object.keys(filteredExamData);
 if (subjects.length !== 4) {
-  alert("Subject loading error. Please restart exam.");
+  alert("Subject loading error. Restart exam.");
   window.location.href = "page1.html";
 }
 
-/* ================= SHUFFLE UTILITY ================= */
-function shuffleArray(array) {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
+/* ================= SHUFFLE UTILS ================= */
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  return arr;
+  return a;
 }
 
-/* ================= SHUFFLE QUESTIONS AND OPTIONS ================= */
-subjects.forEach(sub => filteredExamData[sub] = shuffleArray(filteredExamData[sub]));
+/* ================= SHUFFLE QUESTIONS ================= */
+subjects.forEach(sub => {
+  filteredExamData[sub] = shuffleArray(filteredExamData[sub]);
+});
 
-// Stable option order per question
-let optionOrder = {};
+/* ================= OPTION ORDER ================= */
+const optionOrder = {};
 subjects.forEach(sub => {
   optionOrder[sub] = {};
   filteredExamData[sub].forEach((q, i) => {
@@ -457,17 +467,17 @@ subjects.forEach(sub => {
 let currentSubject = subjects[0];
 let qIndex = 0;
 let answers = {};
-subjects.forEach(s => answers[s] = Array(filteredExamData[s].length).fill(null));
+subjects.forEach(s => {
+  answers[s] = Array(filteredExamData[s].length).fill(null);
+});
 
-// Restore saved answers if present
+/* ================= RESTORE SESSION ================= */
 const savedAnswers = JSON.parse(localStorage.getItem("cbt_answers"));
-if (savedAnswers) {
-  subjects.forEach(sub => {
-    if (savedAnswers[sub]) answers[sub] = savedAnswers[sub];
-  });
-}
+if (savedAnswers) answers = savedAnswers;
+
 const savedSubject = localStorage.getItem("cbt_currentSubject");
 const savedIndex = localStorage.getItem("cbt_qIndex");
+
 if (savedSubject && subjects.includes(savedSubject)) currentSubject = savedSubject;
 if (savedIndex !== null) qIndex = parseInt(savedIndex, 10);
 
@@ -481,7 +491,7 @@ function autoSave() {
 /* ================= SUBJECT TABS ================= */
 const tabsBox = document.getElementById("subjectTabs");
 tabsBox.innerHTML = "";
-subjects.forEach((sub, idx) => {
+subjects.forEach(sub => {
   const tab = document.createElement("div");
   tab.className = "subject-tab";
   if (sub === currentSubject) tab.classList.add("active");
@@ -490,24 +500,29 @@ subjects.forEach((sub, idx) => {
   tabsBox.appendChild(tab);
 });
 
-/* ================= RENDER QUESTION ================= */
+/* ================= RENDER ================= */
 function render() {
   const q = filteredExamData[currentSubject][qIndex];
-  document.getElementById("questionText").textContent = `${qIndex + 1}. ${q.question}`;
+  document.getElementById("questionText").textContent =
+    `${qIndex + 1}. ${q.question}`;
+
   const optBox = document.getElementById("options");
   optBox.innerHTML = "";
 
-  const keys = optionOrder[currentSubject][qIndex];
-  keys.forEach(key => {
+  optionOrder[currentSubject][qIndex].forEach(key => {
     const btn = document.createElement("button");
     btn.className = "option-circle";
     btn.textContent = q.options[key];
-    if (answers[currentSubject][qIndex] === key) btn.classList.add("selected");
+
+    if (answers[currentSubject][qIndex] === key)
+      btn.classList.add("selected");
+
     btn.onclick = () => {
       answers[currentSubject][qIndex] = key;
       autoSave();
       render();
     };
+
     optBox.appendChild(btn);
   });
 
@@ -518,9 +533,16 @@ function render() {
 function renderNums() {
   const box = document.getElementById("qnums");
   box.innerHTML = "";
+
   filteredExamData[currentSubject].forEach((_, i) => {
     const n = document.createElement("div");
+
+    // Base: answered / not answered
     n.className = "qnum " + (answers[currentSubject][i] !== null ? "green" : "red");
+
+    // Current question highlight
+    if (i === qIndex) n.classList.add("current");
+
     n.textContent = i + 1;
     n.onclick = () => { qIndex = i; autoSave(); render(); };
     box.appendChild(n);
@@ -531,13 +553,19 @@ function renderNums() {
 function switchSubject(sub) {
   currentSubject = sub;
   qIndex = 0;
-  document.querySelectorAll(".subject-tab").forEach(t => t.classList.remove("active"));
-  [...tabsBox.children].find(t => t.textContent === sub).classList.add("active");
+
+  document.querySelectorAll(".subject-tab")
+    .forEach(t => t.classList.remove("active"));
+
+  [...tabsBox.children]
+    .find(t => t.textContent === sub)
+    .classList.add("active");
+
   autoSave();
   render();
 }
 
-/* ================= NAVIGATION BUTTONS ================= */
+/* ================= NAV BUTTONS ================= */
 document.getElementById("prevBtn")?.addEventListener("click", () => {
   if (qIndex > 0) { qIndex--; autoSave(); render(); }
 });
@@ -545,41 +573,29 @@ document.getElementById("nextBtn")?.addEventListener("click", () => {
   if (qIndex < filteredExamData[currentSubject].length - 1) { qIndex++; autoSave(); render(); }
 });
 
-/* ================= TIMER ================= */
-let total = 20 * 60;
+/* ================= TIMER WITH BLINK ================= */
+const total = 20 * 60; // 20 minutes
 const endTime = Date.now() + total * 1000;
+const timerEl = document.getElementById("timeText");
 
 const timerInterval = setInterval(() => {
-  const left = Math.max(Math.floor((endTime - Date.now())/1000),0);
+  const left = Math.max(Math.floor((endTime - Date.now()) / 1000), 0);
   const m = Math.floor(left / 60);
   const s = left % 60;
-  document.getElementById("timeText").textContent =
-    `00:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
-  document.getElementById("timerBar").style.width = (left/total)*100 + "%";
-  if (left <= 0) submitExam();
-}, 500); // half-second for smoother progress
 
-/* ================= AUTO-SUBMIT ON APP SWITCH ================= */
-async function autoSubmit() {
-  clearInterval(timerInterval);
-  const result = calculateScore();
-  try {
-    await setDoc(doc(db,"cbtResults", `${candidateName}_${Date.now()}`), {
-      name: candidateName,
-      subjects,
-      answers,
-      rawScore: result.rawScore,
-      jambScore: result.jambScore,
-      submittedAt: serverTimestamp()
-    });
-    alert("You left the exam. Your exam has been auto-submitted.");
-  } catch {
-    alert("Auto-submit failed.");
+  timerEl.textContent = `00:${m.toString().padStart(2,"0")}:${s.toString().padStart(2,"0")}`;
+
+  // Blink effect when last 60 seconds
+  if (left <= 60) {
+    timerEl.style.visibility = (Math.floor(left * 2) % 2 === 0) ? "visible" : "hidden";
+  } else {
+    timerEl.style.visibility = "visible";
   }
-}
-document.addEventListener("visibilitychange", () => {
-  if(document.hidden) autoSubmit();
-});
+
+  document.getElementById("timerBar").style.width = (left / total) * 100 + "%";
+
+  if (left <= 0) finalizeSubmission("timeout");
+}, 500);
 
 /* ================= SCORING ================= */
 function calculateScore() {
@@ -587,32 +603,55 @@ function calculateScore() {
   subjects.forEach(sub => {
     filteredExamData[sub].forEach((q,i) => {
       totalQ++;
-      if(answers[sub][i] !== null){
-        raw += answers[sub][i] === q.answer ? 1 : -0.25;
-      }
+      if (answers[sub][i] !== null) raw += answers[sub][i] === q.answer ? 1 : -0.25;
     });
   });
-  if(raw < 0) raw = 0;
+  if (raw < 0) raw = 0;
   return { rawScore: raw.toFixed(2), jambScore: Math.round((raw/totalQ)*400) };
 }
 
-/* ================= CALCULATOR ================= */
-window.openCalc = () => document.getElementById("calcModal").style.display="flex";
-window.closeCalc = () => document.getElementById("calcModal").style.display="none";
-window.press = val => document.getElementById("calcScreen").value+=val;
-window.calculate = () => {
-  try { document.getElementById("calcScreen").value=eval(document.getElementById("calcScreen").value); } 
-  catch { document.getElementById("calcScreen").value="Error"; }
-};
-
-/* ================= SUBMIT ================= */
-window.submitExam = () => {
+/* ================= FINAL SUBMIT ================= */
+async function finalizeSubmission(reason) {
+  if (localStorage.getItem("cbt_submitted") === "true") return;
   clearInterval(timerInterval);
-  localStorage.setItem("cbt_answers", JSON.stringify(answers));
-  localStorage.setItem("cbt_currentSubject", currentSubject);
-  localStorage.setItem("cbt_qIndex", qIndex);
-  localStorage.setItem("selectedSubjects", JSON.stringify(subjects));
-  window.location.href = "page5.html";
+
+  const result = calculateScore();
+  try {
+    await setDoc(doc(db, "cbtResults", `${candidateName}_${Date.now()}`), {
+      name: candidateName,
+      subjects,
+      answers,
+      rawScore: result.rawScore,
+      jambScore: result.jambScore,
+      submitReason: reason,
+      submittedAt: serverTimestamp()
+    });
+    localStorage.setItem("cbt_submitted", "true");
+    window.location.href = "page5.html";
+  } catch (err) {
+    alert("Submission failed. Contact invigilator.");
+    console.error(err);
+  }
+}
+
+/* ================= AUTO SUBMIT ON APP SWITCH ================= */
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    alert("You left the exam. Auto-submitting.");
+    finalizeSubmission("auto");
+  }
+});
+
+/* ================= MANUAL SUBMIT ================= */
+window.submitExam = () => finalizeSubmission("manual");
+
+/* ================= CALCULATOR ================= */
+window.openCalc = () => document.getElementById("calcModal").style.display = "flex";
+window.closeCalc = () => document.getElementById("calcModal").style.display = "none";
+window.press = v => document.getElementById("calcScreen").value += v;
+window.calculate = () => {
+  try { document.getElementById("calcScreen").value = eval(document.getElementById("calcScreen").value); }
+  catch { document.getElementById("calcScreen").value = "Error"; }
 };
 
 /* ================= INIT ================= */

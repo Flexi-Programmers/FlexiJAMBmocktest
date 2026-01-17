@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flexi CBT – Submission Status</title>
+<title>Flexi CBT – Submission Complete</title>
+
 <style>
 body {
   font-family: Arial, Helvetica, sans-serif;
@@ -17,42 +18,25 @@ body {
 
 .container {
   background: white;
-  padding: 30px 40px;
+  padding: 35px 40px;
   border-radius: 15px;
   box-shadow: 0 5px 15px rgba(0,0,0,0.2);
   text-align: center;
-  max-width: 400px;
+  max-width: 420px;
 }
 
 h1 {
   color: #0b6623;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 p {
   font-size: 16px;
   margin-bottom: 25px;
+  line-height: 1.5;
 }
 
-.spinner {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid #ccc;
-  border-top-color: #0b6623;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  vertical-align: middle;
-  margin-right: 8px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-#homeBtn {
-  display: none; /* initially hidden */
+button {
   padding: 12px 25px;
   border: none;
   border-radius: 12px;
@@ -61,13 +45,29 @@ p {
   font-weight: bold;
   font-size: 16px;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  transition: background 0.3s, transform 0.2s;
+  display: none; /* hidden initially */
 }
 
-#homeBtn:hover {
+button:hover {
   background-color: #084d1a;
-  transform: translateY(-2px);
+}
+
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+  border: 4px solid #ccc;
+  border-top-color: #0b6623;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
 </head>
@@ -75,9 +75,7 @@ p {
 
 <div class="container">
   <h1>Exam Submission</h1>
-  <p id="statusMessage">
-    <span class="spinner"></span> Submitting your exam...
-  </p>
+  <p id="message"><span class="spinner"></span>Submitting your exam<span id="dots"></span></p>
   <button id="homeBtn">Back to Home</button>
 </div>
 
@@ -85,7 +83,7 @@ p {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-// ================= FIREBASE CONFIG =================
+// ===== FIREBASE CONFIG =====
 const firebaseConfig = {
   apiKey: "AIzaSyCPumFid5YNTWug52q2VDtSDQTLU9REgss",
   authDomain: "flexi-tutors.firebaseapp.com",
@@ -99,24 +97,33 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ================= ELEMENTS =================
-const status = document.getElementById("statusMessage");
+// ===== ELEMENTS =====
+const message = document.getElementById("message");
 const homeBtn = document.getElementById("homeBtn");
+const dotsEl = document.getElementById("dots");
 
-// ================= READ LOCALSTORAGE =================
+// ===== DOTS ANIMATION =====
+let dots = 0;
+const dotsInterval = setInterval(() => {
+  dots = (dots + 1) % 4;
+  dotsEl.textContent = '.'.repeat(dots);
+}, 500);
+
+// ===== READ LOCAL STORAGE =====
 const candidateName = localStorage.getItem("candidateName");
 const selectedSubjects = JSON.parse(localStorage.getItem("selectedSubjects") || "[]");
 const answers = JSON.parse(localStorage.getItem("cbt_answers") || "{}");
 
 // Validate data
 if (!candidateName || selectedSubjects.length !== 4 || !answers) {
-  status.innerHTML = "❌ Exam data missing. Please contact the invigilator.";
-  status.style.color = "red";
+  clearInterval(dotsInterval);
+  message.innerHTML = "❌ Exam data missing. Please contact the invigilator.";
+  message.style.color = "red";
   homeBtn.style.display = "inline-block";
   throw new Error("Missing exam data in localStorage");
 }
 
-// ================= SUBMIT TO FIRESTORE =================
+// ===== SUBMIT TO FIRESTORE =====
 async function submitExam() {
   const payload = {
     name: candidateName,
@@ -128,31 +135,35 @@ async function submitExam() {
   try {
     await setDoc(doc(db, "cbtResults", `${candidateName}_${Date.now()}`), payload);
 
-    status.innerHTML = "✅ Your exam has been submitted successfully. Results saved to admin.";
-    status.style.color = "#0b6623";
-
+    clearInterval(dotsInterval);
+    message.innerHTML = "✅ Your exam has been submitted successfully!";
     homeBtn.style.display = "inline-block";
 
-    // Clear localStorage
-    localStorage.removeItem("cbt_answers");
-    localStorage.removeItem("cbt_currentSubject");
-    localStorage.removeItem("cbt_qIndex");
-    localStorage.removeItem("selectedSubjects");
+    // Clean up
+    [
+      "cbt_answers",
+      "cbt_currentSubject",
+      "cbt_qIndex",
+      "selectedSubjects",
+      "cbt_submitted"
+    ].forEach(k => localStorage.removeItem(k));
+
+    localStorage.setItem("cbt_submitted", "true");
 
   } catch (err) {
+    clearInterval(dotsInterval);
     console.error(err);
-    status.innerHTML = "❌ Submission failed. Please check your internet connection or contact the invigilator.";
-    status.style.color = "red";
+    message.innerHTML = "❌ Submission failed. Please check your internet connection or contact the invigilator.";
     homeBtn.style.display = "inline-block";
   }
 }
 
-// ================= BACK TO HOME BUTTON =================
+// ===== HOME BUTTON =====
 homeBtn.onclick = () => {
   window.location.href = "https://flexi-programmers.github.io/flexitutors-/";
 };
 
-// Trigger submission
+// Trigger submission immediately
 submitExam();
 </script>
 
