@@ -1,4 +1,4 @@
-/******** FIREBASE INIT ********/
+/******** FIREBASE ********/
 firebase.initializeApp({
   apiKey: "AIzaSyCPumFid5YNTWug52q2VDtSDQTLU9REgss",
   authDomain: "flexi-tutors.firebaseapp.com",
@@ -6,27 +6,25 @@ firebase.initializeApp({
 });
 const db = firebase.firestore();
 
-/******** CORE VARIABLES ********/
+/******** CORE ********/
 const candidateName = localStorage.getItem("candidateName");
-const selectedSubjects = JSON.parse(localStorage.getItem("selectedSubjects") || "[]");
+const selectedSubjects = JSON.parse(localStorage.getItem("selectedSubjects"));
 
-if (!candidateName || selectedSubjects.length === 0) {
-  alert("Session expired or no subjects selected.");
+if (!candidateName || !selectedSubjects) {
+  alert("Session expired");
   location.href = "page1.html";
 }
 
 document.getElementById("candName").textContent = candidateName;
 
-/******** FILTER AND SHUFFLE SUBJECTS ********/
+/******** FILTER SUBJECTS ********/
 const filteredExamData = {};
-selectedSubjects.forEach(s => {
-  filteredExamData[s] = shuffle([...examData[s]]);
-});
-
+selectedSubjects.forEach(s => filteredExamData[s] = shuffle([...examData[s]]));
 const subjects = Object.keys(filteredExamData);
 let currentSubject = subjects[0];
 let qIndex = 0;
 
+/******** ANSWERS ********/
 const answers = {};
 subjects.forEach(s => answers[s] = Array(filteredExamData[s].length).fill(null));
 
@@ -34,84 +32,81 @@ subjects.forEach(s => answers[s] = Array(filteredExamData[s].length).fill(null))
 const optionOrder = {};
 subjects.forEach(s => {
   optionOrder[s] = {};
-  filteredExamData[s].forEach((q,i) => {
+  filteredExamData[s].forEach((q,i)=>{
     optionOrder[s][i] = shuffle(Object.keys(q.options));
   });
 });
 
-/******** RENDER SUBJECT TABS ********/
-const tabsContainer = document.getElementById("subjectTabs");
-subjects.forEach(s => {
-  const tab = document.createElement("div");
-  tab.className = "subject-tab";
-  tab.textContent = s;
-  tab.onclick = () => { currentSubject = s; qIndex = 0; render(); };
-  tabsContainer.appendChild(tab);
+/******** SUBJECT TABS ********/
+const tabs = document.getElementById("subjectTabs");
+subjects.forEach(s=>{
+  const t = document.createElement("div");
+  t.className = "subject-tab";
+  t.textContent = s;
+  t.onclick = () => { currentSubject = s; qIndex = 0; render(); };
+  tabs.appendChild(t);
 });
-tabsContainer.firstChild.classList.add("active");
+tabs.firstChild.classList.add("active");
 
-/******** RENDER FUNCTION ********/
-function render() {
-  // Highlight current subject
-  document.querySelectorAll(".subject-tab").forEach(t => t.classList.remove("active"));
-  [...tabsContainer.children].find(t => t.textContent === currentSubject).classList.add("active");
+/******** RENDER ********/
+function render(){
+  // Active tab
+  document.querySelectorAll(".subject-tab").forEach(t=>t.classList.remove("active"));
+  [...tabs.children].find(t=>t.textContent===currentSubject).classList.add("active");
 
-  // Render question
+  // Question text
   const q = filteredExamData[currentSubject][qIndex];
-  document.getElementById("questionText").textContent = `${qIndex + 1}. ${q.question}`;
+  document.getElementById("questionText").textContent = `${qIndex+1}. ${q.question}`;
 
-  // Render options
+  // Options
   const optBox = document.getElementById("options");
   optBox.innerHTML = "";
-  optionOrder[currentSubject][qIndex].forEach(k => {
-    const btn = document.createElement("button");
-    btn.className = "option-circle";
-    btn.textContent = q.options[k];
-    if (answers[currentSubject][qIndex] === k) btn.classList.add("selected");
-    btn.onclick = () => { answers[currentSubject][qIndex] = k; render(); };
-    optBox.appendChild(btn);
+  optionOrder[currentSubject][qIndex].forEach(k=>{
+    const b = document.createElement("button");
+    b.className = "option-circle";
+    b.textContent = q.options[k];
+    if(answers[currentSubject][qIndex]===k) b.classList.add("selected");
+    b.onclick = () => { answers[currentSubject][qIndex] = k; render(); };
+    optBox.appendChild(b);
   });
 
-  renderQnums();
-}
-
-/******** RENDER QUESTION NUMBERS ********/
-function renderQnums() {
+  // Question numbers
   const box = document.getElementById("qnums");
   box.innerHTML = "";
-  filteredExamData[currentSubject].forEach((_, i) => {
-    const num = document.createElement("div");
-    num.className = "qnum " + (answers[currentSubject][i] ? "green" : "red");
-    if (i === qIndex) num.classList.add("current");
-    num.textContent = i + 1;
-    num.onclick = () => { qIndex = i; render(); };
-    box.appendChild(num);
+  filteredExamData[currentSubject].forEach((_,i)=>{
+    const d = document.createElement("div");
+    d.className = "qnum "+(answers[currentSubject][i]?"green":"red");
+    if(i===qIndex) d.classList.add("current");
+    d.textContent = i+1;
+    d.onclick = () => { qIndex=i; render(); };
+    box.appendChild(d);
   });
 }
 
-/******** NAVIGATION ********/
-document.getElementById("prevBtn").onclick = () => { if(qIndex > 0){ qIndex--; render(); } };
-document.getElementById("nextBtn").onclick = () => { if(qIndex < filteredExamData[currentSubject].length - 1){ qIndex++; render(); } };
+/******** NAV ********/
+prevBtn.onclick = () => { if(qIndex>0){ qIndex--; render(); submit("auto"); } };
+nextBtn.onclick = () => { if(qIndex<filteredExamData[currentSubject].length-1){ qIndex++; render(); submit("auto"); } };
 
 /******** TIMER ********/
-const totalSeconds = 20 * 60; // 20 minutes
-const endTime = Date.now() + totalSeconds * 1000;
-const timerEl = document.getElementById("timeText");
-const timerBar = document.getElementById("timerBar");
+const total = 20*60;
+const endTime = Date.now() + total*1000;
+const timer = setInterval(()=>{
+  const left = Math.max(0, Math.floor((endTime - Date.now())/1000));
+  timeText.textContent = `00:${String(Math.floor(left/60)).padStart(2,"0")}:${String(left%60).padStart(2,"0")}`;
+  timerBar.style.width = (left/total)*100 + "%";
+  if(left <= 0) submit("timeout");
+},500);
 
-const timerInterval = setInterval(() => {
-  const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-  const m = Math.floor(remaining / 60);
-  const s = remaining % 60;
-  timerEl.textContent = `00:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-  timerBar.style.width = (remaining / totalSeconds * 100) + "%";
-  if (remaining <= 0) autoSubmit("timeout");
-}, 500);
+/******** SUBMIT ********/
+window.examSubmitted = false; // flag to prevent multiple submissions
+async function submit(reason){
+  if(window.examSubmitted) return;
+  window.examSubmitted = true;
 
-/******** SUBMIT FUNCTION ********/
-async function autoSubmit(reason) {
-  clearInterval(timerInterval);
+  clearInterval(timer);
+
   const score = calculateScore();
+
   try {
     await db.collection("cbtResults").add({
       candidateName,
@@ -120,78 +115,68 @@ async function autoSubmit(reason) {
       rawScore: score.rawScore,
       jambScore: score.jambScore,
       reason,
-      submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+      time: firebase.firestore.FieldValue.serverTimestamp()
     });
-    location.href = "page5.html";
   } catch(err) {
-    alert("Submission failed!"); console.error(err);
+    console.error("Submission failed:", err);
   }
+
+  location.href = "page5.html";
 }
+submitBtn.onclick = () => confirm("Submit exam?") && submit("manual");
 
-document.getElementById("submitBtn").onclick = () => {
-  if(confirm("Submit exam?")) autoSubmit("manual");
-};
-
-// Auto-submit on page switch
-document.addEventListener("visibilitychange", () => { if(document.hidden) autoSubmit("auto"); });
+/******** AUTO-SUBMIT ON PAGE SWITCH ********/
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden) submit("auto");
+});
 
 /******** SCORE CALCULATION ********/
-function calculateScore() {
-  let raw = 0, totalQ = 0;
-  subjects.forEach(s => filteredExamData[s].forEach((q,i) => {
-    totalQ++;
+function calculateScore(){
+  let raw=0,total=0;
+  subjects.forEach(s => filteredExamData[s].forEach((q,i)=>{
+    total++;
     if(answers[s][i] === q.answer) raw++;
     else if(answers[s][i]) raw -= 0.25;
   }));
-  if(raw < 0) raw = 0;
-  return { rawScore: raw.toFixed(2), jambScore: Math.round((raw / totalQ) * 400) };
+  return { rawScore: raw.toFixed(2), jambScore: Math.round((raw/total)*400) };
 }
 
-/******** TEXT-TO-SPEECH ********/
-document.getElementById("volumeBtn").onclick = () => {
+/******** TEXT TO SPEECH ********/
+volumeBtn.onclick = () => {
   const q = filteredExamData[currentSubject][qIndex];
-  const opts = optionOrder[currentSubject][qIndex].map((k,i) => `Option ${i+1}: ${q.options[k]}`).join(". ");
-  if("speechSynthesis" in window) {
-    const utter = new SpeechSynthesisUtterance(`Question ${qIndex+1}: ${q.question}. ${opts}`);
-    utter.lang = "en-US";
-    speechSynthesis.speak(utter);
+  const opts = optionOrder[currentSubject][qIndex].map((k,i)=>`Option ${i+1}: ${q.options[k]}`).join(". ");
+  if("speechSynthesis" in window){
+    const u = new SpeechSynthesisUtterance(`Question ${qIndex+1}. ${q.question}. ${opts}`);
+    u.lang = "en-US";
+    speechSynthesis.speak(u);
   } else alert("TTS not supported");
 };
 
 /******** CALCULATOR ********/
-const calcModal = document.getElementById("calcModal");
-const calcScreen = document.getElementById("calcScreen");
+openCalcBtn.onclick = () => calcModal.style.display = "flex";
+document.querySelector(".close-calc").onclick = () => calcModal.style.display = "none";
 
-document.getElementById("openCalcBtn").onclick = () => { calcScreen.value=""; calcModal.style.display="flex"; };
-document.querySelector(".close-calc").onclick = () => { calcModal.style.display="none"; };
-
-document.querySelectorAll(".calc-keys button").forEach(b => {
+document.querySelectorAll(".calc-keys button").forEach(b=>{
   b.onclick = () => {
-    let val = b.textContent;
-    if(val === "=") {
-      try{
-        let exp = calcScreen.value.replace(/÷/g,"/").replace(/×/g,"*");
-        calcScreen.value = Function("return " + exp)();
-      } catch { calcScreen.value = "Error"; }
-    } else if(val === "DEL") {
-      calcScreen.value = calcScreen.value.slice(0,-1);
-    } else if(val === "C") {
-      calcScreen.value = "";
-    } else {
+    let v = b.textContent;
+    if(v === "="){
+      try {
+        let e = calcScreen.value.replace(/÷/g,"/").replace(/×/g,"*");
+        calcScreen.value = Function("return "+e)();
+      } catch {
+        calcScreen.value = "Error";
+      }
+    } else if(v === "DEL") calcScreen.value = calcScreen.value.slice(0,-1);
+    else if(v === "C") calcScreen.value = "";
+    else {
       if(calcScreen.value === "Error") calcScreen.value = "";
-      calcScreen.value += val;
+      calcScreen.value += v;
     }
   };
 });
 
-/******** UTILITY: SHUFFLE ********/
-function shuffle(array) {
-  for(let i = array.length -1; i>0; i--) {
-    const j = Math.floor(Math.random() * (i+1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
+/******** UTILS ********/
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
 /******** INIT ********/
 render();
